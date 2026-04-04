@@ -17,47 +17,78 @@ export async function criarEstudo(formData: FormData) {
   const nome_estudo = formData.get('nome_estudo') as string
   const capa = formData.get('capa') as File
 
-  let url_capa = null
+  let url_capa: string | null = null
 
   // 2. Upload da Capa para o Supabase Storage (se enviada)
   if (capa && capa.size > 0) {
     const fileExt = capa.name.split('.').pop()
-    // Nome único gerado para não sobrescrever capas antigas
     const fileName = `estudos/${Date.now()}-${Math.random().toString(36).substring(2, 10)}.${fileExt}`
 
     const { error: uploadError } = await supabase.storage
       .from('mural_imagens')
-      .upload(fileName, capa, {
-        cacheControl: '3600',
-        upsert: false
-      })
+      .upload(fileName, capa, { cacheControl: '3600', upsert: false })
 
-    if (uploadError) {
-      console.error("Erro no upload da capa:", uploadError)
-      throw new Error("Falha ao enviar a imagem da capa.")
-    }
+    if (uploadError) throw new Error("Falha ao enviar a imagem da capa.")
 
-    // Pega a URL pública para salvar no banco
-    const { data: publicUrlData } = supabase.storage
-      .from('mural_imagens')
-      .getPublicUrl(fileName)
-
+    const { data: publicUrlData } = supabase.storage.from('mural_imagens').getPublicUrl(fileName)
     url_capa = publicUrlData.publicUrl
   }
 
   // 3. Insere na tabela 'estudos_biblicos'
-  const { error: dbError } = await supabase
-    .from('estudos_biblicos')
-    .insert({
-      nome_estudo,
-      url_capa
-    })
+  const { error: dbError } = await supabase.from('estudos_biblicos').insert({ nome_estudo, url_capa })
 
-  if (dbError) {
-    console.error("Erro ao salvar estudo no banco:", dbError)
-    throw new Error("Falha ao cadastrar o estudo bíblico.")
+  if (dbError) throw new Error("Falha ao cadastrar o estudo bíblico.")
+  revalidatePath('/dashboard/estudos')
+}
+
+export async function editarEstudo(formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Usuário não autenticado")
+
+  const id = formData.get('id') as string
+  const nome_estudo = formData.get('nome_estudo') as string
+  const capa = formData.get('capa') as File
+  const capa_atual = formData.get('capa_atual') as string
+  const remover_capa = formData.get('remover_capa') === 'true'
+
+  let url_capa: string | null = capa_atual || null
+
+  // 1. Se marcou a caixinha de remover a capa, apagamos do servidor
+  if (remover_capa) {
+    if (capa_atual) {
+      const velhaFileName = capa_atual.split('/').pop()
+      if (velhaFileName) await supabase.storage.from('mural_imagens').remove([`estudos/${velhaFileName}`])
+    }
+    url_capa = null
+  } 
+  // 2. Se o usuário enviou uma nova foto, fazemos o upload e DELETAMOS a antiga
+  else if (capa && capa.size > 0) {
+    const fileExt = capa.name.split('.').pop()
+    const fileName = `estudos/${Date.now()}-${Math.random().toString(36).substring(2, 10)}.${fileExt}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('mural_imagens')
+      .upload(fileName, capa, { cacheControl: '3600', upsert: false })
+
+    if (!uploadError) {
+      const { data: publicUrlData } = supabase.storage.from('mural_imagens').getPublicUrl(fileName)
+      url_capa = publicUrlData.publicUrl
+
+      // Exclui a capa antiga
+      if (capa_atual) {
+        const velhaFileName = capa_atual.split('/').pop()
+        if (velhaFileName) await supabase.storage.from('mural_imagens').remove([`estudos/${velhaFileName}`])
+      }
+    }
   }
 
+  const { error } = await supabase
+    .from('estudos_biblicos')
+    .update({ nome_estudo, url_capa })
+    .eq('id', id)
+
+  if (error) throw new Error("Falha ao editar o estudo bíblico.")
   revalidatePath('/dashboard/estudos')
 }
 
@@ -65,14 +96,19 @@ export async function excluirEstudo(id: string) {
   'use server'
   const supabase = await createClient()
   
-  // O banco já tem ON DELETE CASCADE, então as lições desse estudo sumirão junto!
+  // Primeiro busca a URL da capa
+  const { data: estudo } = await supabase.from('estudos_biblicos').select('url_capa').eq('id', id).single()
+
+  // Deleta o registro (as lições sumirão via ON DELETE CASCADE)
   const { error } = await supabase.from('estudos_biblicos').delete().eq('id', id)
   
-  if (error) {
-    console.error("Erro ao excluir estudo:", error)
-    throw new Error("Falha ao excluir o estudo.")
+  // Se foi deletado com sucesso e tinha capa, exclui do Storage
+  if (!error && estudo?.url_capa) {
+    const fileName = estudo.url_capa.split('/').pop()
+    if (fileName) await supabase.storage.from('mural_imagens').remove([`estudos/${fileName}`])
   }
 
+  if (error) throw new Error("Falha ao excluir o estudo.")
   revalidatePath('/dashboard/estudos')
 }
 
@@ -88,19 +124,22 @@ export async function adicionarLicao(formData: FormData) {
   const numero_licao = parseInt(formData.get('numero_licao') as string)
   const titulo_licao = formData.get('titulo_licao') as string
 
-  const { error } = await supabase
-    .from('licoes')
-    .insert({
-      estudo_biblico_id,
-      numero_licao,
-      titulo_licao
-    })
+  const { error } = await supabase.from('licoes').insert({ estudo_biblico_id, numero_licao, titulo_licao })
 
-  if (error) {
-    console.error("Erro ao adicionar lição:", error)
-    throw new Error("Falha ao adicionar a lição.")
-  }
+  if (error) throw new Error("Falha ao adicionar a lição.")
+  revalidatePath('/dashboard/estudos')
+}
 
+export async function editarLicao(formData: FormData) {
+  const supabase = await createClient()
+
+  const id = formData.get('id') as string
+  const numero_licao = parseInt(formData.get('numero_licao') as string)
+  const titulo_licao = formData.get('titulo_licao') as string
+
+  const { error } = await supabase.from('licoes').update({ numero_licao, titulo_licao }).eq('id', id)
+
+  if (error) throw new Error("Falha ao editar a lição.")
   revalidatePath('/dashboard/estudos')
 }
 
@@ -109,11 +148,7 @@ export async function excluirLicao(id: string) {
   const supabase = await createClient()
   
   const { error } = await supabase.from('licoes').delete().eq('id', id)
+  if (error) throw new Error("Falha ao excluir a lição.")
   
-  if (error) {
-    console.error("Erro ao excluir lição:", error)
-    throw new Error("Falha ao excluir a lição.")
-  }
-
   revalidatePath('/dashboard/estudos')
 }

@@ -35,9 +35,14 @@ export async function middleware(request: NextRequest) {
   // Essa função getUser é o que atualiza a sessão caso o token esteja expirando
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Proteger rotas de dashboard (Bloqueia quem não tá logado)
+  // 1. Proteger rotas de dashboard (Bloqueia quem NÃO está logado)
   if (!user && request.nextUrl.pathname.startsWith('/dashboard')) {
     return NextResponse.redirect(new URL('/login', request.url))
+  }
+
+  // 2. Proteger rotas de autenticação (Bloqueia quem JÁ ESTÁ logado)
+  if (user && (request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/cadastro'))) {
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   return supabaseResponse

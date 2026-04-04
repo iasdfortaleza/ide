@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CalendarCheck, BookHeart, Users, Send, Clock, Trash2, Filter } from "lucide-react";
+import { CalendarCheck, BookHeart, Users, Send, Clock, Trash2, Filter, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 // Tipagem para aceitar os parâmetros da URL no Next.js
@@ -85,13 +86,21 @@ export default async function LancamentosPage(props: { searchParams?: Promise<{ 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8">
       
-      {/* Cabeçalho */}
-      <div className="flex items-center gap-3">
-        <CalendarCheck className="w-8 h-8 text-primary" />
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Rotina Missionária</h1>
-          <p className="text-sm text-muted-foreground">Lançamentos da Semana</p>
+      {/* Cabeçalho com Botão de Voltar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <CalendarCheck className="w-8 h-8 text-primary" />
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Rotina Missionária</h1>
+            <p className="text-sm text-muted-foreground">Lançamentos da Semana</p>
+          </div>
         </div>
+
+        <Link href="/dashboard">
+          <Button variant="outline" size="sm" className="gap-2 border-border/50 hover:bg-muted/50 transition-colors">
+            <ArrowLeft className="w-4 h-4" /> Voltar ao Painel
+          </Button>
+        </Link>
       </div>
 
       {/* FILTRO EXCLUSIVO PARA O MASTER */}

@@ -1,15 +1,16 @@
 import { createClient } from "@/utils/supabase/server";
 import { 
-  criarDupla, excluirDupla, 
-  adicionarMembro, excluirMembro, 
-  adicionarEstudante, excluirEstudante 
+  criarDupla, excluirDupla, editarDupla,
+  adicionarMembro, excluirMembro, editarMembro,
+  adicionarEstudante, excluirEstudante, editarEstudante
 } from "./actions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Users, Trash2, Plus, Image as ImageIcon, Shield, UserPlus, BookOpen } from "lucide-react";
+import { Users, Trash2, Plus, Image as ImageIcon, Shield, UserPlus, BookOpen, Pencil, ArrowLeft } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export default async function DuplasPage() {
@@ -35,13 +36,10 @@ export default async function DuplasPage() {
     pelotoesQuery = pelotoesQuery.eq("capitao_id", user?.id);
   }
   const { data: pelotoes } = await pelotoesQuery;
-
   const pelotoesIds = pelotoes?.map(p => p.id) || [];
 
   // 3. Buscar os Materiais de Estudo (Para o select de estudantes)
-  const { data: estudos } = await supabase
-    .from("estudos_biblicos")
-    .select("id, nome_estudo");
+  const { data: estudos } = await supabase.from("estudos_biblicos").select("id, nome_estudo");
 
   // 4. Buscar as Duplas (filtradas pelos pelotões permitidos)
   let duplas: any[] = [];
@@ -63,14 +61,23 @@ export default async function DuplasPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8">
       
-      <div className="flex items-center gap-3">
-        <Users className="w-8 h-8 text-primary" />
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Duplas Missionárias</h1>
-          <p className="text-sm text-muted-foreground">
-            {isMaster ? "Visão Global (Master)" : "Visão do Capitão (Admin)"}
-          </p>
+      {/* Cabeçalho com Botão de Voltar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <Users className="w-8 h-8 text-primary" />
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Duplas Missionárias</h1>
+            <p className="text-sm text-muted-foreground">
+              {isMaster ? "Visão Global (Master)" : "Visão do Capitão (Admin)"}
+            </p>
+          </div>
         </div>
+
+        <Link href="/dashboard">
+          <Button variant="outline" size="sm" className="gap-2 border-border/50 hover:bg-muted/50 transition-colors">
+            <ArrowLeft className="w-4 h-4" /> Voltar ao Painel
+          </Button>
+        </Link>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
@@ -97,11 +104,8 @@ export default async function DuplasPage() {
                   <div className="space-y-2">
                     <Label htmlFor="pelotao_id">Vincular ao Pelotão</Label>
                     <select 
-                      id="pelotao_id" 
-                      name="pelotao_id" 
-                      required
-                      defaultValue="" 
-                      className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                      id="pelotao_id" name="pelotao_id" required defaultValue="" 
+                      className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background focus:ring-2 focus:ring-primary"
                     >
                       <option value="" disabled>Selecione...</option>
                       {pelotoes?.map(p => (
@@ -112,13 +116,7 @@ export default async function DuplasPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="foto">Foto da Dupla (Opcional)</Label>
-                    <Input 
-                      id="foto" 
-                      name="foto" 
-                      type="file" 
-                      accept="image/*" 
-                      className="cursor-pointer file:text-primary file:font-bold file:mr-4 file:border-0 file:bg-primary/10 file:rounded-md file:px-2 file:py-1 hover:file:bg-primary/20"
-                    />
+                    <Input id="foto" name="foto" type="file" accept="image/*" className="cursor-pointer file:text-primary file:bg-primary/10 hover:file:bg-primary/20" />
                   </div>
 
                   <Button type="submit" className="w-full mt-4 font-bold shadow-md hover:shadow-primary/25">
@@ -141,113 +139,220 @@ export default async function DuplasPage() {
             </div>
           ) : (
             <div className="grid gap-6">
-              {duplas.map((dupla) => (
-                <Card key={dupla.id} className="overflow-hidden border-border/50 bg-card/30">
-                  
-                  {/* Cabeçalho do Card da Dupla */}
-                  <div className="flex items-center p-4 border-b border-border/50 bg-muted/20 justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-full bg-background relative flex items-center justify-center overflow-hidden border-2 border-primary/20 shrink-0">
-                        {dupla.url_foto_dupla ? (
-                          <Image src={dupla.url_foto_dupla} alt={dupla.nome_dupla} fill className="object-cover" />
-                        ) : (
-                          <ImageIcon className="w-6 h-6 text-muted-foreground/30" />
-                        )}
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-bold text-foreground">{dupla.nome_dupla}</h3>
-                        <p className="text-sm text-primary font-medium flex items-center gap-1">
-                          <Shield className="w-3 h-3" /> {dupla.pelotao?.nome}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <form action={async () => { "use server"; await excluirDupla(dupla.id); }}>
-                      <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive hover:bg-destructive/10" title="Excluir Dupla">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </form>
-                  </div>
+              {duplas.map((dupla) => {
+                
+                const pelotaoObj = Array.isArray(dupla.pelotao) ? dupla.pelotao[0] : dupla.pelotao;
+                const nomeDoPelotao = pelotaoObj?.nome || "Sem pelotão";
 
-                  {/* Corpo do Card: Dividido em Membros e Estudantes */}
-                  <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border/50">
+                return (
+                  <Card key={dupla.id} className="border-border/50 bg-card/30">
                     
-                    {/* LADO A: MEMBROS DA DUPLA */}
-                    <div className="p-4 flex flex-col">
-                      <h4 className="text-sm font-bold uppercase text-muted-foreground mb-3 flex items-center gap-2">
-                        <UserPlus className="w-4 h-4" /> Componentes ({dupla.membros?.length})
-                      </h4>
-                      
-                      <ul className="space-y-2 mb-4 flex-1">
-                        {dupla.membros?.map((membro: any) => (
-                          <li key={membro.id} className="text-sm p-2 bg-background/50 rounded-md border border-border/50 flex justify-between items-start group">
-                            <div>
-                              <p className="font-semibold">{membro.nome}</p>
-                              <p className="text-[10px] text-muted-foreground">Whats: {membro.whatsapp || "Não informado"}</p>
-                            </div>
-                            <form action={async () => { "use server"; await excluirMembro(membro.id); }}>
-                              <button type="submit" className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </form>
-                          </li>
-                        ))}
-                      </ul>
-
-                      {/* Form Add Membro */}
-                      <form action={adicionarMembro} className="space-y-2 mt-auto p-3 bg-muted/10 rounded-md border border-dashed border-border/50">
-                        <input type="hidden" name="dupla_id" value={dupla.id} />
-                        <Input name="nome" placeholder="Nome do membro" required className="h-8 text-xs bg-background" />
-                        <div className="flex gap-2">
-                          <Input name="whatsapp" placeholder="WhatsApp" className="h-8 text-xs bg-background flex-1" />
-                          <Button type="submit" size="sm" className="h-8 px-3"><Plus className="w-4 h-4" /></Button>
+                    {/* CABEÇALHO DA DUPLA (Com Edição Embutida) */}
+                    <details className="[&_summary::-webkit-details-marker]:hidden group/dupladetalhes">
+                      <summary className="flex items-center p-4 border-b border-border/50 bg-muted/20 justify-between cursor-pointer list-none hover:bg-muted/40 transition-colors">
+                        <div className="flex items-center gap-4">
+                          <div className="w-16 h-16 rounded-full bg-background relative flex items-center justify-center overflow-hidden border-2 border-primary/20 shrink-0">
+                            {dupla.url_foto_dupla ? (
+                              <Image 
+                                src={dupla.url_foto_dupla} 
+                                alt={dupla.nome_dupla} 
+                                fill 
+                                sizes="64px"
+                                className="object-cover" 
+                              />
+                            ) : (
+                              <ImageIcon className="w-6 h-6 text-muted-foreground/30" />
+                            )}
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
+                              {dupla.nome_dupla} <Pencil className="w-3 h-3 opacity-30 group-hover/dupladetalhes:opacity-100" />
+                            </h3>
+                            <p className="text-sm text-primary font-medium flex items-center gap-1">
+                              <Shield className="w-3 h-3" /> {nomeDoPelotao}
+                            </p>
+                          </div>
                         </div>
-                      </form>
-                    </div>
-
-                    {/* LADO B: ESTUDANTES (PESSOAS RECEBENDO ESTUDO) */}
-                    <div className="p-4 flex flex-col">
-                      <h4 className="text-sm font-bold uppercase text-primary mb-3 flex items-center gap-2">
-                        <BookOpen className="w-4 h-4" /> Estudantes ({dupla.estudantes?.length})
-                      </h4>
+                        
+                        <form action={async () => { "use server"; await excluirDupla(dupla.id); }}>
+                          <Button type="submit" variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive hover:bg-destructive/10" title="Excluir Dupla">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </form>
+                      </summary>
                       
-                      <ul className="space-y-2 mb-4 flex-1">
-                        {dupla.estudantes?.map((estudante: any) => (
-                          <li key={estudante.id} className="text-sm p-2 bg-primary/5 rounded-md border border-primary/20 flex justify-between items-start group">
-                            <div>
-                              <p className="font-semibold">{estudante.nome_pessoa}</p>
-                              <p className="text-[10px] text-primary italic font-medium">
-                                Livro: {estudante.estudo?.nome_estudo || "Sem material"}
-                              </p>
+                      {/* FORMULÁRIO DE EDIÇÃO DA DUPLA */}
+                      <div className="p-4 border-b border-primary/20 bg-background/80 shadow-inner">
+                        <form action={editarDupla} className="flex flex-col gap-3">
+                          <input type="hidden" name="id" value={dupla.id} />
+                          <input type="hidden" name="foto_atual" value={dupla.url_foto_dupla || ""} />
+                          
+                          <div className="flex flex-col sm:flex-row gap-3 items-end">
+                            <div className="space-y-1 flex-1 w-full">
+                              <Label className="text-[10px] uppercase font-bold text-muted-foreground">Nome da Dupla</Label>
+                              <Input name="nome_dupla" defaultValue={dupla.nome_dupla} required className="h-8 text-xs bg-background" />
                             </div>
-                            <form action={async () => { "use server"; await excluirEstudante(estudante.id); }}>
-                              <button type="submit" className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </form>
-                          </li>
-                        ))}
-                      </ul>
+                            <div className="space-y-1 flex-1 w-full">
+                              <Label className="text-[10px] uppercase font-bold text-muted-foreground">Pelotão</Label>
+                              <select name="pelotao_id" defaultValue={dupla.pelotao_id} required className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-xs">
+                                {pelotoes?.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
+                              </select>
+                            </div>
+                            <div className="space-y-1 flex-1 w-full">
+                              <Label className="text-[10px] uppercase font-bold text-muted-foreground">Nova Foto</Label>
+                              <Input name="foto" type="file" accept="image/*" className="h-8 text-xs bg-background" />
+                            </div>
+                            <Button type="submit" size="sm" className="h-8 text-xs font-bold w-full sm:w-auto">Salvar</Button>
+                          </div>
+                          
+                          {/* CHECKBOX DE REMOVER FOTO */}
+                          {dupla.url_foto_dupla && (
+                            <div className="flex items-center gap-2 mt-2 bg-destructive/10 border border-destructive/20 w-fit px-3 py-1.5 rounded-md">
+                              <input type="checkbox" id={`remover_foto_${dupla.id}`} name="remover_foto" value="true" className="w-3.5 h-3.5 accent-destructive cursor-pointer" />
+                              <Label htmlFor={`remover_foto_${dupla.id}`} className="text-[10px] uppercase font-bold text-destructive cursor-pointer">
+                                Apagar foto atual (Deixar sem foto)
+                              </Label>
+                            </div>
+                          )}
+                        </form>
+                      </div>
+                    </details>
 
-                      {/* Form Add Estudante */}
-                      <form action={adicionarEstudante} className="space-y-2 mt-auto p-3 bg-primary/5 rounded-md border border-dashed border-primary/20">
-                        <input type="hidden" name="dupla_id" value={dupla.id} />
-                        <Input name="nome_pessoa" placeholder="Nome do estudante/casa" required className="h-8 text-xs bg-background" />
-                        <div className="flex gap-2">
-                          <select name="estudo_biblico_id" required defaultValue="" className="flex h-8 flex-1 rounded-md border border-input bg-background px-2 py-1 text-xs focus:ring-2 focus:ring-primary">
-                            <option value="" disabled>Escolha o livro...</option>
-                            {estudos?.map(estudo => (
-                              <option key={estudo.id} value={estudo.id}>{estudo.nome_estudo}</option>
-                            ))}
+                    {/* CORPO: MEMBROS E ESTUDANTES */}
+                    <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border/50">
+                      
+                      {/* LADO A: MEMBROS DA DUPLA */}
+                      <div className="p-4 flex flex-col">
+                        <h4 className="text-sm font-bold uppercase text-muted-foreground mb-3 flex items-center gap-2">
+                          <UserPlus className="w-4 h-4" /> Componentes ({dupla.membros?.length})
+                        </h4>
+                        
+                        <ul className="space-y-2 mb-4 flex-1">
+                          {dupla.membros?.map((membro: any) => (
+                            <li key={membro.id} className="bg-background/50 rounded-md border border-border/50 flex flex-col group/item relative overflow-hidden shadow-sm">
+                              <details className="[&_summary::-webkit-details-marker]:hidden">
+                                <summary className="p-2 flex justify-between items-start cursor-pointer list-none hover:bg-muted/50 transition-colors">
+                                  <div className="flex-1 pr-2">
+                                    <p className="font-semibold text-sm">{membro.nome}</p>
+                                    <div className="text-[10px] text-muted-foreground mt-0.5 space-y-0.5">
+                                      <p>Whats: {membro.whatsapp || "N/A"} • Nasc: {membro.data_nascimento ? new Date(membro.data_nascimento).toLocaleDateString('pt-BR', {timeZone: 'UTC'}) : "N/A"}</p>
+                                      {membro.endereco && <p className="truncate" title={membro.endereco}>End: {membro.endereco}</p>}
+                                    </div>
+                                  </div>
+                                  <div className="flex gap-2 opacity-0 group-hover/item:opacity-100 transition-opacity items-center">
+                                    <Pencil className="w-3.5 h-3.5 text-primary" />
+                                    <form action={async () => { "use server"; await excluirMembro(membro.id); }}>
+                                      <button type="submit" className="text-destructive hover:scale-110 transition-transform"><Trash2 className="w-3.5 h-3.5" /></button>
+                                    </form>
+                                  </div>
+                                </summary>
+                                
+                                <div className="p-3 border-t border-primary/20 bg-primary/5 cursor-default">
+                                  <form action={editarMembro} className="space-y-2">
+                                    <input type="hidden" name="id" value={membro.id} />
+                                    <Input name="nome" defaultValue={membro.nome} required className="h-7 text-xs bg-background" placeholder="Nome completo" />
+                                    <div className="grid grid-cols-2 gap-2">
+                                      <Input name="whatsapp" defaultValue={membro.whatsapp} className="h-7 text-xs bg-background" placeholder="WhatsApp" />
+                                      <Input name="data_nascimento" type="date" defaultValue={membro.data_nascimento} className="h-7 text-xs bg-background" />
+                                    </div>
+                                    <Input name="endereco" defaultValue={membro.endereco} className="h-7 text-xs bg-background" placeholder="Endereço" />
+                                    <Button type="submit" size="sm" className="h-7 text-xs w-full font-bold">Salvar Alterações</Button>
+                                  </form>
+                                </div>
+                              </details>
+                            </li>
+                          ))}
+                        </ul>
+
+                        {/* FORMULÁRIO PARA ADICIONAR MEMBRO */}
+                        <form action={adicionarMembro} className="space-y-2 mt-auto p-3 bg-muted/10 rounded-md border border-dashed border-border/50">
+                          <input type="hidden" name="dupla_id" value={dupla.id} />
+                          <div className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1 mb-1"><Plus className="w-3 h-3"/> Novo Componente</div>
+                          
+                          <Input name="nome" placeholder="Nome completo" required className="h-8 text-xs bg-background" />
+                          <div className="grid grid-cols-2 gap-2">
+                            <Input name="whatsapp" placeholder="WhatsApp" className="h-8 text-xs bg-background" />
+                            <Input name="data_nascimento" type="date" className="h-8 text-xs bg-background" title="Data de Nascimento" />
+                          </div>
+                          <Input name="endereco" placeholder="Endereço" className="h-8 text-xs bg-background" />
+                          <Button type="submit" size="sm" className="h-8 px-3 w-full font-bold">Adicionar à Dupla</Button>
+                        </form>
+                      </div>
+
+                      {/* LADO B: ESTUDANTES */}
+                      <div className="p-4 flex flex-col">
+                        <h4 className="text-sm font-bold uppercase text-primary mb-3 flex items-center gap-2">
+                          <BookOpen className="w-4 h-4" /> Estudantes ({dupla.estudantes?.length})
+                        </h4>
+                        
+                        <ul className="space-y-2 mb-4 flex-1">
+                          {dupla.estudantes?.map((estudante: any) => (
+                            <li key={estudante.id} className="bg-primary/5 rounded-md border border-primary/20 flex flex-col group/est relative overflow-hidden shadow-sm">
+                              <details className="[&_summary::-webkit-details-marker]:hidden">
+                                <summary className="p-2 flex justify-between items-start cursor-pointer list-none hover:bg-primary/10 transition-colors">
+                                  <div className="flex-1 pr-2">
+                                    <p className="font-semibold text-sm">{estudante.nome_pessoa}</p>
+                                    <p className="text-[10px] text-primary italic font-medium my-0.5">
+                                      Livro: {estudante.estudo?.nome_estudo || "Sem material"}
+                                    </p>
+                                    <div className="text-[10px] text-muted-foreground space-y-0.5">
+                                      <p>Tel: {estudante.telefone || "N/A"} • Nasc: {estudante.data_nascimento ? new Date(estudante.data_nascimento).toLocaleDateString('pt-BR', {timeZone: 'UTC'}) : "N/A"}</p>
+                                      {estudante.endereco && <p className="truncate" title={estudante.endereco}>End: {estudante.endereco}</p>}
+                                    </div>
+                                  </div>
+                                  <div className="flex gap-2 opacity-0 group-hover/est:opacity-100 transition-opacity items-center">
+                                    <Pencil className="w-3.5 h-3.5 text-primary" />
+                                    <form action={async () => { "use server"; await excluirEstudante(estudante.id); }}>
+                                      <button type="submit" className="text-destructive hover:scale-110 transition-transform"><Trash2 className="w-3.5 h-3.5" /></button>
+                                    </form>
+                                  </div>
+                                </summary>
+                                
+                                <div className="p-3 border-t border-primary/20 bg-background/80 cursor-default">
+                                  <form action={editarEstudante} className="space-y-2">
+                                    <input type="hidden" name="id" value={estudante.id} />
+                                    <Input name="nome_pessoa" defaultValue={estudante.nome_pessoa} required className="h-7 text-xs bg-background" placeholder="Nome da Família/Pessoa" />
+                                    <select name="estudo_biblico_id" defaultValue={estudante.estudo_biblico_id || ""} className="flex h-7 w-full rounded-md border border-input bg-background px-2 text-xs text-primary">
+                                      <option value="" disabled>Escolha o Livro...</option>
+                                      {estudos?.map(estudo => <option key={estudo.id} value={estudo.id}>{estudo.nome_estudo}</option>)}
+                                    </select>
+                                    <div className="grid grid-cols-2 gap-2">
+                                      <Input name="telefone" defaultValue={estudante.telefone} className="h-7 text-xs bg-background" placeholder="Telefone" />
+                                      <Input name="data_nascimento" type="date" defaultValue={estudante.data_nascimento} className="h-7 text-xs bg-background" />
+                                    </div>
+                                    <Input name="endereco" defaultValue={estudante.endereco} className="h-7 text-xs bg-background" placeholder="Endereço" />
+                                    <Button type="submit" size="sm" className="h-7 text-xs w-full bg-primary font-bold">Salvar Alterações</Button>
+                                  </form>
+                                </div>
+                              </details>
+                            </li>
+                          ))}
+                        </ul>
+
+                        {/* FORMULÁRIO PARA ADICIONAR ESTUDANTE */}
+                        <form action={adicionarEstudante} className="space-y-2 mt-auto p-3 bg-primary/5 rounded-md border border-dashed border-primary/20">
+                          <input type="hidden" name="dupla_id" value={dupla.id} />
+                          <div className="text-[10px] uppercase font-bold text-primary flex items-center gap-1 mb-1"><Plus className="w-3 h-3"/> Novo Estudante/Família</div>
+
+                          <Input name="nome_pessoa" placeholder="Nome do estudante/família" required className="h-8 text-xs bg-background" />
+                          <select name="estudo_biblico_id" required defaultValue="" className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-xs focus:ring-2 focus:ring-primary text-muted-foreground">
+                            <option value="" disabled>Selecione o Livro base...</option>
+                            {estudos?.map(estudo => <option key={estudo.id} value={estudo.id}>{estudo.nome_estudo}</option>)}
                           </select>
-                          <Button type="submit" size="sm" className="h-8 px-3 bg-primary text-primary-foreground hover:bg-primary/90"><Plus className="w-4 h-4" /></Button>
-                        </div>
-                      </form>
-                    </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <Input name="telefone" placeholder="Telefone" className="h-8 text-xs bg-background" />
+                            <Input name="data_nascimento" type="date" className="h-8 text-xs bg-background" title="Data de Nascimento" />
+                          </div>
+                          <Input name="endereco" placeholder="Endereço Completo" className="h-8 text-xs bg-background" />
+                          
+                          <Button type="submit" size="sm" className="h-8 px-3 w-full bg-primary font-bold">Vincular Estudante</Button>
+                        </form>
+                      </div>
 
-                  </div>
-                </Card>
-              ))}
+                    </div>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </div>
