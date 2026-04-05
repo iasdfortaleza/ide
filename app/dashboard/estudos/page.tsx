@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { BookOpen, Trash2, Plus, Image as ImageIcon, Layers, BookText, Pencil, ArrowLeft } from "lucide-react";
+import { BookOpen, Trash2, Plus, Image as ImageIcon, Layers, BookText, Pencil, ArrowLeft, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -65,13 +65,12 @@ export default async function EstudosPage() {
         
         {/* COLUNA ESQUERDA: Formulário do Estudo (Livro) */}
         <div className="lg:col-span-1">
-          <Card className="border-primary/20 bg-card/50 backdrop-blur-md sticky top-24">
+          <Card className="border-primary/20 bg-card/50 backdrop-blur-md sticky top-24 shadow-md">
             <CardHeader>
               <CardTitle className="text-xl">Novo Estudo Bíblico</CardTitle>
               <CardDescription>Cadastre a capa e o título do material.</CardDescription>
             </CardHeader>
             <CardContent>
-              {/* Sem encType para evitar os avisos do React 19 */}
               <form action={criarEstudo} className="space-y-4">
                 
                 <div className="space-y-2">
@@ -99,7 +98,7 @@ export default async function EstudosPage() {
           </Card>
         </div>
 
-        {/* COLUNA DIREITA: Lista de Estudos e Gestão de Lições */}
+        {/* COLUNA DIREITA: Lista de Estudos (Acordeões) */}
         <div className="lg:col-span-2 space-y-6">
           <h2 className="text-xl font-bold tracking-tight">Materiais Cadastrados ({estudos?.length || 0})</h2>
           
@@ -109,49 +108,79 @@ export default async function EstudosPage() {
               <p>Nenhum estudo bíblico cadastrado.</p>
             </div>
           ) : (
-            <div className="grid gap-6">
+            <div className="grid gap-4">
               {estudos?.map((estudo) => (
-                <Card key={estudo.id} className="overflow-hidden border-border/50 bg-card/30">
-                  <div className="flex flex-col sm:flex-row">
+                <details key={estudo.id} className="group border border-primary/20 bg-card/50 backdrop-blur-md rounded-xl overflow-hidden shadow-sm [&_summary::-webkit-details-marker]:hidden">
+                  
+                  {/* CABEÇALHO DO ACORDEÃO (Resumo do Estudo) */}
+                  <summary className="bg-muted/20 px-4 py-3 border-b border-border/50 flex justify-between items-center cursor-pointer list-none hover:bg-muted/40 transition-all">
+                    <div className="flex items-center gap-4">
+                      {/* Miniatura da Capa no Resumo */}
+                      <div className="w-12 h-12 rounded-md bg-background relative flex-shrink-0 flex items-center justify-center overflow-hidden border border-primary/20 shadow-sm">
+                        {estudo.url_capa ? (
+                          <Image 
+                            src={estudo.url_capa} 
+                            alt={`Capa ${estudo.nome_estudo}`} 
+                            fill 
+                            sizes="48px"
+                            className="object-cover" 
+                          />
+                        ) : (
+                          <ImageIcon className="w-5 h-5 text-muted-foreground/30" />
+                        )}
+                      </div>
+                      <h3 className="text-base md:text-lg font-bold text-foreground flex items-center gap-2">
+                        <BookText className="w-5 h-5 text-primary" />
+                        {estudo.nome_estudo}
+                      </h3>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      <span className="text-xs bg-background px-3 py-1.5 rounded-md text-muted-foreground border border-border/50 font-bold whitespace-nowrap">
+                        {estudo.licoes.length} Lições
+                      </span>
+                      <ChevronDown className="w-5 h-5 text-muted-foreground group-open:rotate-180 transition-transform duration-300" />
+                    </div>
+                  </summary>
+
+                  {/* CONTEÚDO QUE APARECE AO ABRIR */}
+                  <div className="flex flex-col sm:flex-row bg-background/40">
                     
-                    {/* IMAGEM DO ESTUDO */}
-                    <div className="w-full sm:w-48 h-48 bg-muted relative flex-shrink-0 flex items-center justify-center border-r border-border/50">
-                      {estudo.url_capa ? (
-                        <Image 
-                          src={estudo.url_capa} 
-                          alt={`Capa ${estudo.nome_estudo}`}
-                          fill
-                          sizes="(max-width: 768px) 100vw, 200px"
-                          className="object-cover opacity-90"
-                        />
-                      ) : (
-                        <ImageIcon className="w-8 h-8 text-muted-foreground/30" />
-                      )}
+                    {/* IMAGEM E AÇÕES DO ESTUDO */}
+                    <div className="w-full sm:w-48 bg-muted/5 relative flex-shrink-0 flex flex-col items-center justify-start border-b sm:border-b-0 sm:border-r border-border/50 p-4 gap-4">
+                      <div className="w-full aspect-[3/4] relative rounded-md overflow-hidden border border-border/50 shadow-sm bg-card">
+                        {estudo.url_capa ? (
+                          <Image 
+                            src={estudo.url_capa} 
+                            alt={`Capa ${estudo.nome_estudo}`}
+                            fill
+                            sizes="200px"
+                            className="object-cover opacity-90"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <ImageIcon className="w-8 h-8 text-muted-foreground/30" />
+                          </div>
+                        )}
+                      </div>
+                      <form action={async () => { "use server"; await excluirEstudo(estudo.id); }} className="w-full">
+                        <Button type="submit" variant="destructive" size="sm" className="w-full gap-2 text-xs font-bold bg-destructive/10 text-destructive hover:bg-destructive hover:text-white border border-destructive/20 shadow-sm" title="Excluir Estudo Inteiro">
+                          <Trash2 className="w-4 h-4" /> Excluir Livro
+                        </Button>
+                      </form>
                     </div>
                     
                     {/* DETALHES E LIÇÕES */}
                     <div className="p-4 flex-1 flex flex-col">
                       
-                      <div className="flex items-start justify-between mb-2">
-                        <h3 className="text-xl font-bold text-primary flex items-center gap-2">
-                          <BookText className="w-5 h-5" />
-                          {estudo.nome_estudo}
-                        </h3>
-                        <form action={async () => { "use server"; await excluirEstudo(estudo.id); }}>
-                          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive hover:bg-destructive/10" title="Excluir Estudo Inteiro">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </form>
-                      </div>
-
                       {/* ACORDEÃO DE EDIÇÃO DO LIVRO */}
                       <details className="group/editestudo [&_summary::-webkit-details-marker]:hidden mb-4">
-                        <summary className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-primary cursor-pointer list-none bg-muted/30 px-2.5 py-1 rounded-md border border-border/50 transition-colors">
-                          <Pencil className="w-3 h-3" /> Editar Material
+                        <summary className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-primary cursor-pointer list-none bg-muted/30 px-3 py-1.5 rounded-md border border-border/50 transition-colors w-fit">
+                          <Pencil className="w-3.5 h-3.5" /> Editar Informações do Livro
                         </summary>
                         
                         <div className="pt-3 pb-2">
-                          <form action={editarEstudo} className="space-y-3 p-3 bg-background border border-primary/20 rounded-md shadow-inner">
+                          <form action={editarEstudo} className="space-y-3 p-4 bg-background border border-primary/20 rounded-xl shadow-sm">
                             <input type="hidden" name="id" value={estudo.id} />
                             <input type="hidden" name="capa_atual" value={estudo.url_capa || ""} />
                             
@@ -162,7 +191,7 @@ export default async function EstudosPage() {
                             
                             <div className="space-y-1">
                               <Label className="text-[10px] uppercase font-bold text-muted-foreground">Nova Capa</Label>
-                              <Input name="capa" type="file" accept="image/*" className="h-8 text-xs bg-muted/30" />
+                              <Input name="capa" type="file" accept="image/*" className="h-8 text-xs bg-muted/30 cursor-pointer file:text-primary file:font-bold file:mr-2 file:bg-transparent file:border-0" />
                             </div>
 
                             {estudo.url_capa && (
@@ -174,64 +203,65 @@ export default async function EstudosPage() {
                               </div>
                             )}
 
-                            <Button type="submit" size="sm" className="h-8 text-xs font-bold w-full mt-2">Salvar Alterações</Button>
+                            <Button type="submit" size="sm" className="h-8 text-xs font-bold w-full mt-2 shadow-sm">Salvar Alterações</Button>
                           </form>
                         </div>
                       </details>
 
                       {/* LISTA DE LIÇÕES ATUAIS */}
-                      <div className="bg-background/50 rounded-md border border-border/50 p-3 mb-4 flex-1 h-32 overflow-y-auto">
-                        <p className="text-xs text-muted-foreground uppercase font-semibold mb-2 flex justify-between border-b border-border/50 pb-1">
-                          <span>Lições Cadastradas</span>
-                          <span>{estudo.licoes.length}</span>
-                        </p>
+                      <div className="bg-muted/10 rounded-xl border border-border/50 p-1 mb-4 flex-1 max-h-64 overflow-y-auto shadow-inner">
+                        <div className="sticky top-0 bg-muted/90 backdrop-blur-sm z-10 px-3 py-2 flex justify-between items-center border-b border-border/50 rounded-t-lg">
+                          <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Lições Cadastradas</span>
+                        </div>
                         
-                        {estudo.licoes.length === 0 ? (
-                          <p className="text-sm text-muted-foreground italic mt-2">Nenhuma lição adicionada ainda.</p>
-                        ) : (
-                          <ul className="space-y-1">
-                            {estudo.licoes.map((licao: any) => (
-                              <li key={licao.id} className="relative group/licao border-b border-border/30 last:border-0">
-                                
-                                <details className="[&_summary::-webkit-details-marker]:hidden w-full">
-                                  <summary className="flex items-center justify-between text-sm p-1.5 hover:bg-card rounded-md cursor-pointer list-none transition-colors">
-                                    <span><span className="font-bold text-primary mr-2">#{licao.numero_licao}</span> {licao.titulo_licao}</span>
+                        <div className="p-2">
+                          {estudo.licoes.length === 0 ? (
+                            <p className="text-sm text-muted-foreground italic text-center py-4">Nenhuma lição adicionada ainda.</p>
+                          ) : (
+                            <ul className="space-y-1">
+                              {estudo.licoes.map((licao: any) => (
+                                <li key={licao.id} className="relative group/licao">
+                                  
+                                  <details className="[&_summary::-webkit-details-marker]:hidden w-full">
+                                    <summary className="flex items-center justify-between text-sm p-2 hover:bg-card rounded-lg cursor-pointer list-none transition-colors border border-transparent hover:border-border/50">
+                                      <span className="font-medium text-foreground/90"><span className="font-black text-primary mr-2">#{licao.numero_licao}</span> {licao.titulo_licao}</span>
+                                      
+                                      <div className="flex gap-2 opacity-0 group-hover/licao:opacity-100 transition-opacity items-center">
+                                        <Pencil className="w-3.5 h-3.5 text-primary" />
+                                        <form action={async () => { "use server"; await excluirLicao(licao.id); }}>
+                                          <button type="submit" className="text-muted-foreground hover:text-destructive hover:scale-110 transition-transform">
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                          </button>
+                                        </form>
+                                      </div>
+                                    </summary>
                                     
-                                    <div className="flex gap-2 opacity-0 group-hover/licao:opacity-100 transition-opacity items-center">
-                                      <Pencil className="w-3.5 h-3.5 text-primary" />
-                                      <form action={async () => { "use server"; await excluirLicao(licao.id); }}>
-                                        <button type="submit" className="text-muted-foreground hover:text-destructive hover:scale-110 transition-transform">
-                                          <Trash2 className="w-3.5 h-3.5" />
-                                        </button>
+                                    {/* FORMULÁRIO DE EDIÇÃO DA LIÇÃO */}
+                                    <div className="p-3 my-1 border border-primary/20 bg-primary/5 rounded-xl shadow-sm">
+                                      <form action={editarLicao} className="flex gap-2 items-end">
+                                        <input type="hidden" name="id" value={licao.id} />
+                                        <div className="w-16">
+                                          <Label className="text-[10px] font-bold uppercase text-primary">Nº</Label>
+                                          <Input name="numero_licao" type="number" defaultValue={licao.numero_licao} required className="h-8 text-xs bg-background" />
+                                        </div>
+                                        <div className="flex-1">
+                                          <Label className="text-[10px] font-bold uppercase text-primary">Título</Label>
+                                          <Input name="titulo_licao" defaultValue={licao.titulo_licao} required className="h-8 text-xs bg-background" />
+                                        </div>
+                                        <Button type="submit" size="sm" className="h-8 px-3 text-xs font-bold">Salvar</Button>
                                       </form>
                                     </div>
-                                  </summary>
+                                  </details>
                                   
-                                  {/* FORMULÁRIO DE EDIÇÃO DA LIÇÃO */}
-                                  <div className="p-2 mb-2 border border-primary/20 bg-primary/5 rounded-md shadow-sm">
-                                    <form action={editarLicao} className="flex gap-2 items-end">
-                                      <input type="hidden" name="id" value={licao.id} />
-                                      <div className="w-16">
-                                        <Label className="text-[10px] font-bold">Nº</Label>
-                                        <Input name="numero_licao" type="number" defaultValue={licao.numero_licao} required className="h-7 text-xs bg-background" />
-                                      </div>
-                                      <div className="flex-1">
-                                        <Label className="text-[10px] font-bold">Título</Label>
-                                        <Input name="titulo_licao" defaultValue={licao.titulo_licao} required className="h-7 text-xs bg-background" />
-                                      </div>
-                                      <Button type="submit" size="sm" className="h-7 text-xs font-bold">Salvar</Button>
-                                    </form>
-                                  </div>
-                                </details>
-                                
-                              </li>
-                            ))}
-                          </ul>
-                        )}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
                       </div>
 
                       {/* FORMULÁRIO PARA ADICIONAR NOVA LIÇÃO */}
-                      <form action={adicionarLicao} className="flex gap-2 items-end bg-muted/20 p-2 rounded-md border border-border/50">
+                      <form action={adicionarLicao} className="flex gap-3 items-end bg-background p-4 rounded-xl border border-primary/20 shadow-sm">
                         <input type="hidden" name="estudo_biblico_id" value={estudo.id} />
                         
                         <div className="w-20">
@@ -242,8 +272,8 @@ export default async function EstudosPage() {
                             min="1" 
                             required 
                             placeholder="Ex: 1" 
-                            className="h-8 text-sm bg-background" 
-                            defaultValue={estudo.licoes.length + 1} // Sugere o próximo número
+                            className="h-9 text-sm bg-muted/20" 
+                            defaultValue={estudo.licoes.length + 1}
                           />
                         </div>
                         
@@ -254,18 +284,18 @@ export default async function EstudosPage() {
                             type="text" 
                             required 
                             placeholder="Ex: A Bíblia e Você" 
-                            className="h-8 text-sm bg-background" 
+                            className="h-9 text-sm bg-muted/20" 
                           />
                         </div>
                         
-                        <Button type="submit" size="sm" className="h-8 px-3" title="Adicionar Lição">
-                          <Plus className="w-4 h-4" />
+                        <Button type="submit" size="sm" className="h-9 px-4 font-bold shadow-sm" title="Adicionar Lição">
+                          <Plus className="w-4 h-4 mr-1" /> Adicionar
                         </Button>
                       </form>
 
                     </div>
                   </div>
-                </Card>
+                </details>
               ))}
             </div>
           )}
