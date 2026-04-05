@@ -146,7 +146,7 @@ export default async function LancamentosPage(props: { searchParams?: Promise<{ 
             return (
               <details key={dupla.id} className="group border border-primary/20 bg-card/50 backdrop-blur-md rounded-xl overflow-hidden shadow-sm [&_summary::-webkit-details-marker]:hidden">
                 
-                {/* Cabeçalho Ajustado: Mais fino verticalmente (py-3 md:py-4) e com textos um pouco mais proporcionais */}
+                {/* Cabeçalho Ajustado */}
                 <summary className="bg-muted/20 px-6 py-3 md:py-4 border-b border-border/50 flex justify-between items-center cursor-pointer list-none hover:bg-muted/40 transition-all">
                   <h2 className="font-bold text-lg md:text-xl text-foreground flex items-center gap-3">
                     <Users className="w-5 h-5 md:w-6 md:h-6 text-primary" /> {dupla.nome_dupla}
@@ -163,13 +163,13 @@ export default async function LancamentosPage(props: { searchParams?: Promise<{ 
                 <div className="flex flex-col divide-y divide-border/50">
                   
                   {/* SEÇÃO DE ESTUDOS */}
-                  <div className="p-6 space-y-5">
-                    <h3 className="text-base font-bold uppercase text-primary flex items-center gap-2 mb-2 border-b border-border/20 pb-2">
+                  <div className="p-6 space-y-5 bg-white">
+                    <h3 className="text-base font-bold uppercase text-primary flex items-center gap-2 mb-2 border-b border-black/10 pb-2">
                       <BookHeart className="w-5 h-5" /> Marcar Estudos
                     </h3>
                     
                     {(!dupla.estudantes || dupla.estudantes.length === 0) ? (
-                      <p className="text-sm text-muted-foreground italic">Nenhum estudante cadastrado nesta dupla.</p>
+                      <p className="text-sm text-black/60 italic">Nenhum estudante cadastrado nesta dupla.</p>
                     ) : (
                       <div className="grid md:grid-cols-2 gap-4">
                         {dupla.estudantes.filter((e: any) => e.status === 'ativo').map((estudante: any, index: number) => {
@@ -177,38 +177,39 @@ export default async function LancamentosPage(props: { searchParams?: Promise<{ 
                           const licoesDoLivro = estudosComLicoes?.find(est => est.id === estudante.estudo_biblico_id)?.licoes || [];
                           licoesDoLivro.sort((a: any, b: any) => a.numero_licao - b.numero_licao);
 
-                          const isPar = index % 2 === 0;
-                          const bgContainer = isPar ? "bg-[#11161d]" : "bg-[#1a212c]";
-                          const borderContainer = isPar ? "border-white/5" : "border-primary/10";
-
                           const ultimoProgresso = progressoTotal?.find(p => p.estudante_id === estudante.id);
                           const licAnteriorObj = ultimoProgresso ? (Array.isArray(ultimoProgresso.licao) ? ultimoProgresso.licao[0] : ultimoProgresso.licao) : null;
 
+                          // Cores escuras para os cartões constrastarem com o bg-white
+                          const isPar = index % 2 === 0;
+                          const bgContainer = isPar ? "bg-[#11161d]" : "bg-[#1a212c]";
+                          const borderContainer = "border-primary/20";
+
                           return (
-                            <form action={lancarEstudo} key={estudante.id} className={`p-4 rounded-xl border ${borderContainer} space-y-3 relative group ${bgContainer} shadow-sm`}>
+                            <form action={lancarEstudo} key={estudante.id} className={`p-4 rounded-xl border ${borderContainer} space-y-3 relative group ${bgContainer} text-white shadow-lg`}>
                               <input type="hidden" name="estudante_id" value={estudante.id} />
                               
-                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-white/5 pb-2">
-                                <p className="font-black text-sm md:text-base text-foreground/90 uppercase tracking-wider">{estudante.nome_pessoa}</p>
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-white/10 pb-2">
+                                <p className="font-black text-sm md:text-base uppercase tracking-wider">{estudante.nome_pessoa}</p>
                                 
                                 {ultimoProgresso && licAnteriorObj ? (
-                                  <div className="text-[10px] text-muted-foreground flex items-center gap-1.5 bg-black/40 px-2 py-1 rounded border border-white/5 w-fit">
+                                  <div className="text-[10px] text-white/80 flex items-center gap-1.5 bg-black/40 px-2 py-1 rounded border border-white/10 w-fit">
                                     <Clock className="w-3 h-3 text-primary" /> 
-                                    <span className="font-medium text-foreground/70">Anterior:</span> Lição {licAnteriorObj.numero_licao} ({new Date(ultimoProgresso.data_registro).toLocaleDateString('pt-BR', { timeZone: 'UTC' })})
+                                    <span className="font-medium text-white/50">Anterior:</span> Lição {licAnteriorObj.numero_licao} ({new Date(ultimoProgresso.data_registro).toLocaleDateString('pt-BR', { timeZone: 'UTC' })})
                                   </div>
                                 ) : (
-                                  <div className="text-[10px] text-muted-foreground flex items-center gap-1.5 bg-black/20 px-2 py-1 rounded border border-white/5 w-fit italic">
+                                  <div className="text-[10px] text-white/50 flex items-center gap-1.5 bg-black/20 px-2 py-1 rounded border border-white/5 w-fit italic">
                                     <Clock className="w-3 h-3 opacity-50" /> Nenhuma lição anterior.
                                   </div>
                                 )}
                               </div>
                               
                               {licoesDoLivro.length === 0 ? (
-                                <p className="text-xs text-destructive font-semibold">Estudante sem material vinculado.</p>
+                                <p className="text-xs text-red-400 font-semibold">Estudante sem material vinculado.</p>
                               ) : (
                                 <div className="flex flex-col xl:flex-row gap-3">
                                   <div className="flex-1">
-                                    <select name="licao_id" required defaultValue="" className="w-full h-10 rounded-md border border-input bg-background/50 px-3 text-sm focus:ring-2 focus:ring-primary text-foreground/90 font-medium">
+                                    <select name="licao_id" required defaultValue="" className="w-full h-10 rounded-md border border-white/10 bg-black/50 px-3 text-sm focus:ring-2 focus:ring-primary text-white font-medium">
                                       <option value="" disabled>Qual a lição atual?</option>
                                       {licoesDoLivro.map((licao: any) => (
                                         <option key={licao.id} value={licao.id}>Lição {licao.numero_licao}: {licao.titulo_licao}</option>
@@ -216,8 +217,8 @@ export default async function LancamentosPage(props: { searchParams?: Promise<{ 
                                     </select>
                                   </div>
                                   <div className="flex gap-2 items-center w-full xl:w-auto">
-                                    <Input name="data_registro" type="date" defaultValue={hoje} className="h-10 text-sm w-36 bg-background/50 focus:ring-2 focus:ring-primary" />
-                                    <Button type="submit" size="sm" className="h-10 px-4 shadow-md gap-2 font-bold w-full xl:w-auto">
+                                    <Input name="data_registro" type="date" defaultValue={hoje} className="h-10 text-sm w-36 bg-black/50 text-white border-white/10 focus:ring-2 focus:ring-primary" />
+                                    <Button type="submit" size="sm" className="h-10 px-4 shadow-md gap-2 font-bold w-full xl:w-auto text-primary-foreground">
                                       Lançar <Send className="w-4 h-4" />
                                     </Button>
                                   </div>
@@ -282,14 +283,14 @@ export default async function LancamentosPage(props: { searchParams?: Promise<{ 
                               return (
                                 <div key={visita.id} className={`p-3 rounded-lg border border-white/5 flex justify-between items-center group shadow-sm ${bgHist}`}>
                                   <div className="flex flex-col">
-                                    <span className="font-bold text-sm text-foreground/90">{visita.nome_visitado}</span>
-                                    <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
+                                    <span className="font-bold text-sm text-white/90">{visita.nome_visitado}</span>
+                                    <span className="text-[10px] text-white/60 font-medium flex items-center gap-1">
                                       <CalendarCheck className="w-3 h-3" /> {new Date(visita.data_visita).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
                                     </span>
                                   </div>
                                   
                                   <form action={async () => { "use server"; await excluirVisita(visita.id); }}>
-                                    <button type="submit" title="Excluir Visita" className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md opacity-0 group-hover:opacity-100 transition-all">
+                                    <button type="submit" title="Excluir Visita" className="p-2 text-white/50 hover:text-destructive hover:bg-destructive/10 rounded-md opacity-0 group-hover:opacity-100 transition-all">
                                       <Trash2 className="w-4 h-4" />
                                     </button>
                                   </form>
