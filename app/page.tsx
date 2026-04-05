@@ -52,7 +52,7 @@ export default async function HomePage() {
         </h1>
       </div>
 
-      {/* ================= CONTEÚDO VISUAL (A Grade) ================= */}
+      {/* ================= CONTEÚDO VISUAL TESTE (A Grade) ================= */}
       <div className="relative z-10 flex h-full flex-col px-4 sm:px-8">
         {/* Padding superior para fugir do título fixo */}
         <main className="min-h-0 flex-1 pt-24 sm:pt-28 pb-8 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
