@@ -136,8 +136,8 @@ export function TabelaEstudos({
                 <th className="p-2 text-left w-1/4">Dupla Missionária</th>
                 <th className="p-2 text-left w-1/5">Aluno / Família</th>
                 <th className="p-2 text-center">Progresso Geral</th>
+                <th className="p-2 text-center w-24 border-r border-border/50">Anterior</th>
                 <th className="p-2 text-center w-24 bg-primary/5">Lição Atual</th>
-                <th className="p-2 text-center w-24 border-l border-border/50">Anterior</th>
               </tr>
             </thead>
             <tbody className="text-xs">
@@ -217,6 +217,18 @@ export function TabelaEstudos({
                           </div>
                         </td>
 
+                        {/* COLUNA: Lição Anterior */}
+                        <td className="px-2 py-1 text-center border-r border-border/50 align-middle">
+                           <div className="flex flex-col items-center justify-center leading-none">
+                            <span className="font-bold text-xs text-foreground">{numeroLiAnterior}</span>
+                            {dataLiAnterior && (
+                              <span className="text-[8px] text-muted-foreground opacity-70 mt-0.5">
+                                {dataLiAnterior}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+
                         {/* COLUNA: Lição Atual (Ex: 5/20 e Data) */}
                         <td className="px-2 py-1 text-center bg-primary/5 align-middle">
                            <div className="flex flex-col items-center justify-center leading-none">
@@ -227,18 +239,6 @@ export function TabelaEstudos({
                             {dataLiAtual && (
                               <span className="mt-0.5 text-[8px] text-muted-foreground font-semibold bg-background/50 px-1 py-0.5 rounded border border-border/40">
                                 {dataLiAtual}
-                              </span>
-                            )}
-                          </div>
-                        </td>
-
-                        {/* COLUNA: Lição Anterior */}
-                        <td className="px-2 py-1 text-center border-l border-border/50 align-middle">
-                           <div className="flex flex-col items-center justify-center leading-none">
-                            <span className="font-bold text-xs text-foreground">{numeroLiAnterior}</span>
-                            {dataLiAnterior && (
-                              <span className="text-[8px] text-muted-foreground opacity-70 mt-0.5">
-                                {dataLiAnterior}
                               </span>
                             )}
                           </div>
