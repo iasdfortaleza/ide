@@ -136,7 +136,7 @@ export function TabelaEstudos({
                 <th className="p-2 text-left w-1/4">Dupla Missionária</th>
                 <th className="p-2 text-left w-1/5">Aluno / Família</th>
                 <th className="p-2 text-center">Progresso Geral</th>
-                <th className="p-2 text-center w-24 border-r border-border/50">Anterior</th>
+                <th className="p-2 text-center w-24 border-r border-border/50">Lição Anterior</th>
                 <th className="p-2 text-center w-24 bg-primary/5">Lição Atual</th>
               </tr>
             </thead>
