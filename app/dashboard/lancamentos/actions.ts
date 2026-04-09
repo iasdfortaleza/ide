@@ -4,7 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 // ==========================================
-// 1. LANÇAMENTO DE ESTUDOS (PROGRESSO)
+// 1. GESTÃO DE ESTUDOS (PROGRESSO)
 // ==========================================
 
 export async function lancarEstudo(formData: FormData) {
@@ -34,19 +34,60 @@ export async function lancarEstudo(formData: FormData) {
     throw new Error("Falha ao registrar o estudo.")
   }
 
+  // Revalida para atualizar os dados na tela de lançamentos e no mural público
   revalidatePath('/dashboard/lancamentos')
+  revalidatePath('/', 'layout')
+}
+
+export async function editarLancamentoEstudo(formData: FormData) {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Usuário não autenticado")
+
+  const id = formData.get('id') as string
+  const licao_id = formData.get('licao_id') as string
+  const data_registro = formData.get('data_registro') as string
+
+  const { error } = await supabase
+    .from('progresso_estudo')
+    .update({
+      licao_id,
+      data_registro
+    })
+    .eq('id', id)
+
+  if (error) {
+    console.error("Erro ao editar estudo:", error)
+    throw new Error("Falha ao atualizar o registro de estudo.")
+  }
+
+  revalidatePath('/dashboard/lancamentos')
+  revalidatePath('/', 'layout')
 }
 
 export async function excluirLancamentoEstudo(id: string) {
-  'use server'
   const supabase = await createClient()
-  const { error } = await supabase.from('progresso_estudo').delete().eq('id', id)
-  if (error) throw new Error("Falha ao excluir o registro de estudo.")
+  
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Usuário não autenticado")
+
+  const { error } = await supabase
+    .from('progresso_estudo')
+    .delete()
+    .eq('id', id)
+
+  if (error) {
+    console.error("Erro ao excluir estudo:", error)
+    throw new Error("Falha ao excluir o registro de estudo.")
+  }
+
   revalidatePath('/dashboard/lancamentos')
+  revalidatePath('/', 'layout')
 }
 
 // ==========================================
-// 2. LANÇAMENTO DE VISITAS
+// 2. GESTÃO DE VISITAS
 // ==========================================
 
 export async function lancarVisita(formData: FormData) {
@@ -61,7 +102,6 @@ export async function lancarVisita(formData: FormData) {
   const data_nascimento = formData.get('data_nascimento') as string
   const data_visita_raw = formData.get('data_visita') as string
 
-  // Se não preencher a data da visita, usa a data atual
   const data_visita = data_visita_raw ? data_visita_raw : new Date().toISOString().split('T')[0]
 
   const { error } = await supabase
@@ -80,12 +120,25 @@ export async function lancarVisita(formData: FormData) {
   }
 
   revalidatePath('/dashboard/lancamentos')
+  revalidatePath('/', 'layout')
 }
 
 export async function excluirVisita(id: string) {
-  'use server'
   const supabase = await createClient()
-  const { error } = await supabase.from('visitas').delete().eq('id', id)
-  if (error) throw new Error("Falha ao excluir o registro de visita.")
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Usuário não autenticado")
+
+  const { error } = await supabase
+    .from('visitas')
+    .delete()
+    .eq('id', id)
+
+  if (error) {
+    console.error("Erro ao excluir visita:", error)
+    throw new Error("Falha ao excluir o registro de visita.")
+  }
+
   revalidatePath('/dashboard/lancamentos')
+  revalidatePath('/', 'layout')
 }
