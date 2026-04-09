@@ -18,94 +18,68 @@ export function ResumoPeriodo({
   endDate
 }: ResumoPeriodoProps) {
   
-  // 1. LIMITES DE DATAS E CÁLCULO DO PERÍODO
-  const anoAtual = new Date().getFullYear();
-  const inicioAno = `${anoAtual}-01-01`;
-  const fimAno = `${anoAtual}-12-31`;
-
-  const hoje = new Date();
-  const trintaDiasAtras = new Date(hoje);
-  trintaDiasAtras.setDate(hoje.getDate() - 30);
-  const data30Dias = trintaDiasAtras.toISOString().split('T')[0];
-
-  // Calcular a diferença de dias do filtro
+  // 1. CÁLCULO DO PERÍODO SELECIONADO NO CALENDÁRIO
   const dtStart = new Date(startDate);
   const dtEnd = new Date(endDate);
+  
   const diferencaTempo = Math.abs(dtEnd.getTime() - dtStart.getTime());
-  // Adiciona 1 para incluir o dia final no intervalo (ex: dia 01 a dia 01 = 1 dia)
   const diferencaDias = Math.ceil(diferencaTempo / (1000 * 60 * 60 * 24)) + 1; 
 
-  // Formatação das datas para exibição completa (DD/MM/YYYY)
   const startFormatado = dtStart.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
   const endFormatado = dtEnd.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
 
+  // Referência para "Parados": 30 dias atrás a partir de HOJE (Independente do calendário)
+  const hoje = new Date();
+  const trintaDiasAtras = new Date(hoje);
+  trintaDiasAtras.setDate(hoje.getDate() - 30);
+  const data30DiasLimite = trintaDiasAtras.toISOString().split('T')[0];
+
   // 2. VARIÁVEIS DE CONTAGEM
-  let parados30Dias = 0;
-  let paradosFiltro = 0;
-  let concluidosAno = 0;
-  let concluidosFiltro = 0;
+  let parados30DiasHoje = 0; // Alunos que não estudam há mais de 30 dias em relação a hoje
+  let paradosNoFiltro = 0;   // Alunos que não tiveram atividade no período do calendário
+  let concluidosNoFiltro = 0;
 
   // 3. LÓGICA DE ESTUDOS PARADOS E CONCLUÍDOS (Por Aluno)
   for (const aluno of estudantesAtivos) {
-    // Filtra o histórico apenas deste aluno
     const progressoAluno = progressoTotal.filter(p => p.estudante_id === aluno.id);
-    
-    // Ordena do mais recente para o mais antigo
     progressoAluno.sort((a, b) => new Date(b.data_registro).getTime() - new Date(a.data_registro).getTime());
 
-    // --- PARADOS ---
-    const ultimoEstudo = progressoAluno[0];
-    
-    // Se não tem estudo ou o último foi há mais de 30 dias
-    if (!ultimoEstudo || ultimoEstudo.data_registro < data30Dias) {
-      parados30Dias++;
+    // --- PARADOS (Situação Real Atual) ---
+    const ultimoEstudoGeral = progressoAluno[0];
+    if (!ultimoEstudoGeral || ultimoEstudoGeral.data_registro < data30DiasLimite) {
+      parados30DiasHoje++;
     }
 
-    // Se NÃO teve nenhum estudo lançado dentro do período do calendário
-    const teveEstudoNoFiltro = progressoAluno.some(p => p.data_registro >= startDate && p.data_registro <= endDate);
-    if (!teveEstudoNoFiltro) {
-      paradosFiltro++;
+    // --- PARADOS (Dentro do Período Selecionado) ---
+    const teveEstudoNoCalendario = progressoAluno.some(p => p.data_registro >= startDate && p.data_registro <= endDate);
+    if (!teveEstudoNoCalendario) {
+      paradosNoFiltro++;
     }
 
-    // --- CONCLUÍDOS ---
+    // --- CONCLUÍDOS (Dentro do Período Selecionado) ---
     const livro = estudosComLicoes.find(e => e.id === aluno.estudo_biblico_id);
-    if (livro && livro.licoes && livro.licoes.length > 0) {
+    if (livro && livro.licoes?.length > 0) {
       const totalLicoes = livro.licoes.length;
-      let maxLicao = 0;
-      let dataConclusao = ""; 
-
-      // Descobre qual foi a lição mais alta alcançada e quando
-      for (const p of progressoAluno) {
+      
+      // Verifica se o aluno atingiu a última lição DENTRO do período do calendário
+      const alcancouUltimaNoFiltro = progressoAluno.some(p => {
         const licObj = Array.isArray(p.licao) ? p.licao[0] : p.licao;
-        if (licObj && licObj.numero_licao >= maxLicao) {
-          if (licObj.numero_licao > maxLicao) {
-            maxLicao = licObj.numero_licao;
-            dataConclusao = p.data_registro;
-          } else if (licObj.numero_licao === maxLicao && dataConclusao !== "" && p.data_registro < dataConclusao) {
-            // Pega a primeira (mais antiga) vez que bateu a meta máxima
-            dataConclusao = p.data_registro; 
-          }
-        }
-      }
+        return (licObj?.numero_licao >= totalLicoes) && (p.data_registro >= startDate && p.data_registro <= endDate);
+      });
 
-      if (maxLicao >= totalLicoes && dataConclusao !== "") {
-        if (dataConclusao >= inicioAno && dataConclusao <= fimAno) {
-          concluidosAno++;
-        }
-        if (dataConclusao >= startDate && dataConclusao <= endDate) {
-          concluidosFiltro++;
-        }
+      if (alcancouUltimaNoFiltro) {
+        concluidosNoFiltro++;
       }
     }
   }
 
-  // 4. LÓGICA DE ESTUDOS REALIZADOS (Total de Lançamentos)
-  const realizadosAno = progressoTotal.filter(p => p.data_registro >= inicioAno && p.data_registro <= fimAno).length;
-  const realizadosFiltro = progressoTotal.filter(p => p.data_registro >= startDate && p.data_registro <= endDate).length;
+  // 4. TOTAIS DE LANÇAMENTOS (Realizados e Visitas)
+  // Agora o "Acumulado" mostra tudo o que o banco enviou, e o "Filtro" mostra o período do calendário
+  const realizadosAcumulado = progressoTotal.length;
+  const realizadosNoFiltro = progressoTotal.filter(p => p.data_registro >= startDate && p.data_registro <= endDate).length;
 
-  // 5. LÓGICA DE VISITAS
-  const visitasAno = visitasTotais.filter(v => v.data_visita >= inicioAno && v.data_visita <= fimAno).length;
-  const visitasFiltro = visitasTotais.filter(v => v.data_visita >= startDate && v.data_visita <= endDate).length;
+  const visitasAcumulado = visitasTotais.length;
+  const visitasNoFiltro = visitasTotais.filter(v => v.data_visita >= startDate && v.data_visita <= endDate).length;
 
   return (
     <details className="group bg-card/40 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden shadow-lg [&_summary::-webkit-details-marker]:hidden">
@@ -117,7 +91,7 @@ export function ResumoPeriodo({
               Painel de <span className="text-primary">Indicadores</span>
             </h2>
             <span className="text-[10px] text-muted-foreground font-semibold mt-0.5 sm:mt-1">
-              Período selecionado: {startFormatado} a {endFormatado}
+              Período: {startFormatado} a {endFormatado}
             </span>
           </div>
         </div>
@@ -126,82 +100,68 @@ export function ResumoPeriodo({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 md:p-6 bg-background/20">
         
-        {/* 1. PARADOS (Vermelho) */}
-        <div className="flex flex-col bg-card/80 border border-border/50 rounded-xl overflow-hidden shadow-sm hover:border-destructive/30 transition-colors">
+        {/* 1. PARADOS */}
+        <div className="flex flex-col bg-card/80 border border-border/50 rounded-xl overflow-hidden shadow-sm">
           <div className="bg-destructive/10 border-b border-destructive/20 p-2.5 flex items-center justify-center gap-2">
             <AlertCircle className="w-4 h-4 text-destructive" />
             <h3 className="font-bold text-[11px] uppercase tracking-widest text-destructive">Estudos Parados</h3>
           </div>
           <div className="flex divide-x divide-border/50 flex-1 p-3">
             <div className="flex flex-col items-center justify-center flex-1 gap-1">
-              <span className="text-[9px] uppercase font-bold text-destructive/70 tracking-wider text-center">&gt; 30 Dias</span>
-              <span className="text-3xl font-black text-destructive/90">{parados30Dias}</span>
+              <span className="text-[9px] uppercase font-bold text-destructive/70 tracking-wider text-center">Hoje (+30d)</span>
+              <span className="text-3xl font-black text-destructive/90">{parados30DiasHoje}</span>
             </div>
             <div className="flex flex-col items-center justify-center flex-1 gap-1">
-              <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">
-                {diferencaDias} {diferencaDias === 1 ? 'Dia' : 'Dias'}
-              </span>
-              <span className="text-3xl font-black text-foreground/80">{paradosFiltro}</span>
+              <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">Neste Período</span>
+              <span className="text-3xl font-black text-foreground/80">{paradosNoFiltro}</span>
             </div>
           </div>
         </div>
 
-        {/* 2. REALIZADOS (Azul) */}
-        <div className="flex flex-col bg-card/80 border border-border/50 rounded-xl overflow-hidden shadow-sm hover:border-blue-500/30 transition-colors">
+        {/* 2. REALIZADOS */}
+        <div className="flex flex-col bg-card/80 border border-border/50 rounded-xl overflow-hidden shadow-sm">
           <div className="bg-blue-500/10 border-b border-blue-500/20 p-2.5 flex items-center justify-center gap-2">
             <BookOpenCheck className="w-4 h-4 text-blue-500" />
             <h3 className="font-bold text-[11px] uppercase tracking-widest text-blue-500">Realizados</h3>
           </div>
           <div className="flex divide-x divide-border/50 flex-1 p-3">
             <div className="flex flex-col items-center justify-center flex-1 gap-1">
-              <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">Acumulado</span>
-              <span className="text-3xl font-black text-blue-500/90">{realizadosAno}</span>
+              <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">Histórico</span>
+              <span className="text-3xl font-black text-blue-500/90">{realizadosAcumulado}</span>
             </div>
             <div className="flex flex-col items-center justify-center flex-1 gap-1">
-              <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">
-                {diferencaDias} {diferencaDias === 1 ? 'Dia' : 'Dias'}
-              </span>
-              <span className="text-3xl font-black text-foreground/80">{realizadosFiltro}</span>
+              <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">Neste Período</span>
+              <span className="text-3xl font-black text-foreground/80">{realizadosNoFiltro}</span>
             </div>
           </div>
         </div>
 
-        {/* 3. CONCLUÍDOS (Verde) */}
-        <div className="flex flex-col bg-card/80 border border-border/50 rounded-xl overflow-hidden shadow-sm hover:border-green-500/30 transition-colors">
+        {/* 3. CONCLUÍDOS */}
+        <div className="flex flex-col bg-card/80 border border-border/50 rounded-xl overflow-hidden shadow-sm">
           <div className="bg-green-500/10 border-b border-green-500/20 p-2.5 flex items-center justify-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-green-500" />
             <h3 className="font-bold text-[11px] uppercase tracking-widest text-green-500">Concluídos</h3>
           </div>
-          <div className="flex divide-x divide-border/50 flex-1 p-3">
-            <div className="flex flex-col items-center justify-center flex-1 gap-1">
-              <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">Acumulado</span>
-              <span className="text-3xl font-black text-green-500/90">{concluidosAno}</span>
-            </div>
-            <div className="flex flex-col items-center justify-center flex-1 gap-1">
-              <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">
-                {diferencaDias} {diferencaDias === 1 ? 'Dia' : 'Dias'}
-              </span>
-              <span className="text-3xl font-black text-foreground/80">{concluidosFiltro}</span>
-            </div>
+          <div className="flex flex-col items-center justify-center flex-1 p-3 gap-1">
+            <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">Neste Período</span>
+            <span className="text-3xl font-black text-green-500/90">{concluidosNoFiltro}</span>
           </div>
         </div>
 
-        {/* 4. VISITAS (Dourado/Primary) */}
-        <div className="flex flex-col bg-card/80 border border-border/50 rounded-xl overflow-hidden shadow-sm hover:border-primary/30 transition-colors">
+        {/* 4. VISITAS */}
+        <div className="flex flex-col bg-card/80 border border-border/50 rounded-xl overflow-hidden shadow-sm">
           <div className="bg-primary/10 border-b border-primary/20 p-2.5 flex items-center justify-center gap-2">
             <Users className="w-4 h-4 text-primary" />
             <h3 className="font-bold text-[11px] uppercase tracking-widest text-primary">Visitas</h3>
           </div>
           <div className="flex divide-x divide-border/50 flex-1 p-3">
             <div className="flex flex-col items-center justify-center flex-1 gap-1">
-              <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">Acumulado</span>
-              <span className="text-3xl font-black text-primary/90">{visitasAno}</span>
+              <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">Histórico</span>
+              <span className="text-3xl font-black text-primary/90">{visitasAcumulado}</span>
             </div>
             <div className="flex flex-col items-center justify-center flex-1 gap-1">
-              <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">
-                {diferencaDias} {diferencaDias === 1 ? 'Dia' : 'Dias'}
-              </span>
-              <span className="text-3xl font-black text-foreground/80">{visitasFiltro}</span>
+              <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">Neste Período</span>
+              <span className="text-3xl font-black text-foreground/80">{visitasNoFiltro}</span>
             </div>
           </div>
         </div>

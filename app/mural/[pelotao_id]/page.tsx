@@ -25,16 +25,13 @@ export default async function MuralPelotaoPage(props: {
   // Data Final: Hoje
   const defaultEnd = dataLocal.toISOString().split('T')[0];
 
-  // Data Inicial: 6 dias atrás (Totalizando 7 dias com hoje)
+  // Data Inicial: 6 dias atrás
   const dataSeteDiasAtras = new Date(dataLocal);
   dataSeteDiasAtras.setDate(dataLocal.getDate() - 6);
   const defaultStart = dataSeteDiasAtras.toISOString().split('T')[0];
 
   const startDate = searchParams.start || defaultStart;
   const endDate = searchParams.end || defaultEnd;
-
-  // Data para o acumulado do ano
-  const inicioAno = `${anoAtual}-01-01`;
 
   // ==========================================
   // 2. BUSCAS NO BANCO DE DADOS
@@ -55,7 +52,6 @@ export default async function MuralPelotaoPage(props: {
       estudantes(id, nome_pessoa, estudo_biblico_id, status)
     `).eq("pelotao_id", pelotao_id).order("nome_dupla"),
     
-    // ATUALIZAÇÃO: Busca a meta específica deste pelotão e deste ano
     supabase.from("metas").select("*").eq("ano", anoAtual).eq("pelotao_id", pelotao_id).single()
   ]);
 
@@ -65,23 +61,22 @@ export default async function MuralPelotaoPage(props: {
   const estudantesAtivos = duplas?.flatMap(d => d.estudantes.filter((e: any) => e.status === 'ativo')) || [];
   const estudantesIds = estudantesAtivos.map(e => e.id);
   
-  // Buscamos o progresso total (para cálculos de parados e acumulados do ano)
+  // REMOVIDO .gte("data_registro", inicioAno) para permitir que o componente 
+  // filtre qualquer data selecionada no calendário.
   const { data: progressoTotal } = await supabase
     .from("progresso_estudo")
     .select("estudante_id, data_registro, licao:licoes(numero_licao)")
     .in("estudante_id", estudantesIds.length ? estudantesIds : ['00000000-0000-0000-0000-000000000000'])
-    .gte("data_registro", inicioAno) // Puxa desde o início do ano
     .order('data_registro', { ascending: false });
 
-  // Buscamos todas as visitas do ano para o pelotão (para o resumo acumulado)
+  // REMOVIDO .gte("data_visita", inicioAno) pelo mesmo motivo.
   const { data: visitasTotais } = await supabase
     .from("visitas")
     .select("id, dupla_id, nome_visitado, data_visita")
     .in("dupla_id", duplasIds.length ? duplasIds : ['00000000-0000-0000-0000-000000000000'])
-    .gte("data_visita", inicioAno)
     .order("data_visita", { ascending: false });
 
-  // Filtramos as visitas apenas para o período do calendário (para a Tabela de Visitas)
+  // Filtramos as visitas para o período do calendário
   const visitasNoPeriodo = visitasTotais?.filter(v => 
     v.data_visita >= startDate && v.data_visita <= endDate
   ) || [];

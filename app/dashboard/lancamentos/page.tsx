@@ -1,5 +1,8 @@
 import { createClient } from "@/utils/supabase/server";
-import { lancarEstudo, editarLancamentoEstudo, excluirLancamentoEstudo, lancarVisita, excluirVisita } from "./actions";
+import { 
+  lancarEstudo, editarLancamentoEstudo, excluirLancamentoEstudo, 
+  lancarVisita, editarVisita, excluirVisita 
+} from "./actions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -120,7 +123,9 @@ export default async function LancamentosPage(props: { searchParams?: Promise<{ 
         {duplas?.map((dupla) => {
           const pelotaoObj = Array.isArray(dupla.pelotao) ? dupla.pelotao[0] : dupla.pelotao;
           const nomeDoPelotao = pelotaoObj?.nome || "Sem pelotão";
-          const ultimasVisitas = [...(dupla.visitas || [])].sort((a: any, b: any) => new Date(b.data_visita).getTime() - new Date(a.data_visita).getTime()).slice(0, 3);
+          
+          // Todas as visitas da dupla, ordenadas da mais recente para a mais antiga
+          const historicoVisitas = [...(dupla.visitas || [])].sort((a: any, b: any) => new Date(b.data_visita).getTime() - new Date(a.data_visita).getTime());
 
           return (
             <details key={dupla.id} className="group border border-primary/20 bg-card/50 backdrop-blur-md rounded-xl overflow-hidden shadow-sm [&_summary::-webkit-details-marker]:hidden">
@@ -150,7 +155,6 @@ export default async function LancamentosPage(props: { searchParams?: Promise<{ 
                       const historicoEstudante = progressoTotal?.filter(p => p.estudante_id === estudante.id) || [];
                       const ultimoProgresso = historicoEstudante[0];
                       
-                      // Tratamento do erro do TypeScript: Verifica se licao é array ou objeto
                       const licAnteriorObj = ultimoProgresso?.licao 
                         ? (Array.isArray(ultimoProgresso.licao) ? ultimoProgresso.licao[0] : ultimoProgresso.licao) 
                         : null;
@@ -181,16 +185,12 @@ export default async function LancamentosPage(props: { searchParams?: Promise<{ 
                             <Button type="submit" size="sm" className="h-9 px-4 font-bold"><Send className="w-3.5 h-3.5" /></Button>
                           </form>
 
-                          {/* HISTÓRICO RECOLHÍVEL (FECHADO POR PADRÃO) */}
                           <details className="group/hist">
                             <summary className="text-[10px] uppercase font-bold text-white/40 cursor-pointer hover:text-primary transition-colors flex items-center gap-1.5 list-none">
                               <History className="w-3 h-3" /> Ver histórico ({historicoEstudante.length})
                             </summary>
                             <div className="mt-3 space-y-2 max-h-40 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-primary/20">
                               {historicoEstudante.map((registro: any) => {
-                                // Tratamento interno para o select do histórico também
-                                const licItem = registro.licao ? (Array.isArray(registro.licao) ? registro.licao[0] : registro.licao) : null;
-                                
                                 return (
                                   <form action={editarLancamentoEstudo} key={registro.id} className="flex items-center gap-2 p-2 bg-black/40 rounded-lg border border-white/5 group/item">
                                     <input type="hidden" name="id" value={registro.id} />
@@ -237,6 +237,8 @@ export default async function LancamentosPage(props: { searchParams?: Promise<{ 
                     <Users className="w-5 h-5 text-primary" /> Registrar Visita
                   </h3>
                   <div className="grid lg:grid-cols-2 gap-8">
+                    
+                    {/* Formulário Novo Lançamento de Visita */}
                     <form action={lancarVisita} className="p-5 bg-background/60 border border-primary/20 rounded-xl space-y-5 shadow-sm h-fit">
                       <input type="hidden" name="dupla_id" value={dupla.id} />
                       <div className="space-y-1">
@@ -258,30 +260,74 @@ export default async function LancamentosPage(props: { searchParams?: Promise<{ 
                       </Button>
                     </form>
 
-                    <div className="space-y-3">
-                      <h4 className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-1.5"><Clock className="w-4 h-4" /> Últimas Visitas</h4>
-                      {ultimasVisitas.length === 0 ? (
-                        <div className="p-4 rounded-xl border border-dashed border-border/50 bg-background/20 text-center text-sm text-muted-foreground italic">Nenhuma visita registrada.</div>
-                      ) : (
-                        <div className="flex flex-col gap-2">
-                          {ultimasVisitas.map((visita: any) => (
-                            <div key={visita.id} className="p-3 rounded-lg border border-white/5 bg-card flex justify-between items-center group shadow-sm">
-                              <div className="flex flex-col">
-                                <span className="font-bold text-sm">{visita.nome_visitado}</span>
-                                <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
-                                  <CalendarCheck className="w-3 h-3" /> {new Date(visita.data_visita).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
-                                </span>
-                              </div>
-                              <form action={async () => { "use server"; await excluirVisita(visita.id); }}>
-                                <button type="submit" className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md opacity-0 group-hover:opacity-100 transition-all">
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </form>
+                    {/* HISTÓRICO RECOLHÍVEL DE VISITAS */}
+                    <div className="bg-card/50 border border-border/40 p-4 rounded-xl h-fit">
+                      <details className="group/histVisita">
+                        <summary className="text-xs uppercase font-bold text-foreground flex items-center justify-between cursor-pointer hover:text-primary transition-colors list-none pb-2 border-b border-border/50">
+                          <div className="flex items-center gap-1.5">
+                            <History className="w-4 h-4" /> Histórico de Visitas ({historicoVisitas.length})
+                          </div>
+                          <ChevronDown className="w-4 h-4 group-open/histVisita:rotate-180 transition-transform" />
+                        </summary>
+                        
+                        <div className="mt-4 space-y-2 max-h-64 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary/20">
+                          {historicoVisitas.length === 0 ? (
+                            <div className="p-4 rounded-xl border border-dashed border-border/50 bg-background/20 text-center text-sm text-muted-foreground italic">
+                              Nenhuma visita registrada.
                             </div>
-                          ))}
+                          ) : (
+                            historicoVisitas.map((visita: any) => (
+                              <form action={editarVisita} key={visita.id} className="flex flex-wrap items-center gap-2 p-2 bg-background/80 rounded-lg border border-border/50 group/item shadow-sm">
+                                <input type="hidden" name="id" value={visita.id} />
+                                
+                                <div className="flex-1 min-w-[120px]">
+                                  <input 
+                                    name="nome_visitado" 
+                                    defaultValue={visita.nome_visitado} 
+                                    required
+                                    placeholder="Nome"
+                                    className="bg-transparent text-xs font-bold text-foreground w-full outline-none focus:border-b focus:border-primary px-1" 
+                                  />
+                                </div>
+                                
+                                <div className="w-28">
+                                  <input 
+                                    name="whatsapp" 
+                                    defaultValue={visita.whatsapp || ""} 
+                                    placeholder="WhatsApp"
+                                    className="bg-transparent text-[10px] text-muted-foreground w-full outline-none focus:border-b focus:border-primary px-1" 
+                                  />
+                                </div>
+
+                                <div className="w-24">
+                                  <input 
+                                    name="data_visita" 
+                                    type="date" 
+                                    defaultValue={visita.data_visita} 
+                                    required
+                                    className="bg-transparent text-[10px] text-muted-foreground w-full outline-none focus:text-primary" 
+                                  />
+                                </div>
+
+                                <div className="flex gap-1 ml-auto">
+                                  <button type="submit" title="Salvar" className="p-1.5 hover:bg-green-500/20 rounded text-green-500 transition-colors">
+                                    <Save className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button 
+                                    formAction={async () => { "use server"; await excluirVisita(visita.id); }} 
+                                    className="p-1.5 hover:bg-destructive/20 rounded text-destructive transition-colors"
+                                    title="Excluir"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </form>
+                            ))
+                          )}
                         </div>
-                      )}
+                      </details>
                     </div>
+
                   </div>
                 </div>
               </div>

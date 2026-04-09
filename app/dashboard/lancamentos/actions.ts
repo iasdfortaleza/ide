@@ -123,6 +123,35 @@ export async function lancarVisita(formData: FormData) {
   revalidatePath('/', 'layout')
 }
 
+export async function editarVisita(formData: FormData) {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Usuário não autenticado")
+
+  const id = formData.get('id') as string
+  const nome_visitado = formData.get('nome_visitado') as string
+  const whatsapp = formData.get('whatsapp') as string
+  const data_visita = formData.get('data_visita') as string
+
+  const { error } = await supabase
+    .from('visitas')
+    .update({
+      nome_visitado,
+      whatsapp: whatsapp || null,
+      data_visita
+    })
+    .eq('id', id)
+
+  if (error) {
+    console.error("Erro ao editar visita:", error)
+    throw new Error("Falha ao atualizar o registro de visita.")
+  }
+
+  revalidatePath('/dashboard/lancamentos')
+  revalidatePath('/', 'layout')
+}
+
 export async function excluirVisita(id: string) {
   const supabase = await createClient()
 
