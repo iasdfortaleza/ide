@@ -37,7 +37,8 @@ export function ResumoPeriodo({
   // 2. VARIÁVEIS DE CONTAGEM
   let parados30DiasHoje = 0; // Alunos que não estudam há mais de 30 dias em relação a hoje
   let paradosNoFiltro = 0;   // Alunos que não tiveram atividade no período do calendário
-  let concluidosNoFiltro = 0;
+  let concluidosAcumulado = 0; // Alunos que já concluíram o estudo (Histórico Total)
+  let concluidosNoFiltro = 0;  // Alunos que concluíram dentro do período do calendário
 
   // 3. LÓGICA DE ESTUDOS PARADOS E CONCLUÍDOS (Por Aluno)
   for (const aluno of estudantesAtivos) {
@@ -56,25 +57,34 @@ export function ResumoPeriodo({
       paradosNoFiltro++;
     }
 
-    // --- CONCLUÍDOS (Dentro do Período Selecionado) ---
+    // --- CONCLUÍDOS ---
     const livro = estudosComLicoes.find(e => e.id === aluno.estudo_biblico_id);
     if (livro && livro.licoes?.length > 0) {
       const totalLicoes = livro.licoes.length;
       
-      // Verifica se o aluno atingiu a última lição DENTRO do período do calendário
-      const alcancouUltimaNoFiltro = progressoAluno.some(p => {
+      // Verifica se o aluno já concluiu em ALGUM momento (Histórico)
+      const jaConcluiu = progressoAluno.some(p => {
+        const licObj = Array.isArray(p.licao) ? p.licao[0] : p.licao;
+        return (licObj?.numero_licao >= totalLicoes);
+      });
+
+      if (jaConcluiu) {
+        concluidosAcumulado++;
+      }
+
+      // Verifica se a conclusão ocorreu especificamente DENTRO do período
+      const concluiuNoFiltro = progressoAluno.some(p => {
         const licObj = Array.isArray(p.licao) ? p.licao[0] : p.licao;
         return (licObj?.numero_licao >= totalLicoes) && (p.data_registro >= startDate && p.data_registro <= endDate);
       });
 
-      if (alcancouUltimaNoFiltro) {
+      if (concluiuNoFiltro) {
         concluidosNoFiltro++;
       }
     }
   }
 
   // 4. TOTAIS DE LANÇAMENTOS (Realizados e Visitas)
-  // Agora o "Acumulado" mostra tudo o que o banco enviou, e o "Filtro" mostra o período do calendário
   const realizadosAcumulado = progressoTotal.length;
   const realizadosNoFiltro = progressoTotal.filter(p => p.data_registro >= startDate && p.data_registro <= endDate).length;
 
@@ -142,9 +152,15 @@ export function ResumoPeriodo({
             <CheckCircle2 className="w-4 h-4 text-green-500" />
             <h3 className="font-bold text-[11px] uppercase tracking-widest text-green-500">Concluídos</h3>
           </div>
-          <div className="flex flex-col items-center justify-center flex-1 p-3 gap-1">
-            <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">Neste Período</span>
-            <span className="text-3xl font-black text-green-500/90">{concluidosNoFiltro}</span>
+          <div className="flex divide-x divide-border/50 flex-1 p-3">
+            <div className="flex flex-col items-center justify-center flex-1 gap-1">
+              <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">Histórico</span>
+              <span className="text-3xl font-black text-green-500/90">{concluidosAcumulado}</span>
+            </div>
+            <div className="flex flex-col items-center justify-center flex-1 gap-1">
+              <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">Neste Período</span>
+              <span className="text-3xl font-black text-foreground/80">{concluidosNoFiltro}</span>
+            </div>
           </div>
         </div>
 
