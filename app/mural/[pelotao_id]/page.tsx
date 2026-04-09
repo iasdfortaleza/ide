@@ -2,7 +2,8 @@ import { createClient } from "@/utils/supabase/server";
 import { MuralHeader } from "@/components/mural/MuralHeader";
 import { TabelaEstudos } from "@/components/mural/TabelaEstudos";
 import { TabelaVisitas } from "@/components/mural/TabelaVisitas";
-import { ResumoMetas } from "@/components/mural/ResumoMetas";
+import { ResumoPeriodo } from "@/components/mural/ResumoPeriodo";
+import { AlvoBatismo } from "@/components/mural/AlvoBatismo";
 
 export default async function MuralPelotaoPage(props: { 
   params: Promise<{ pelotao_id: string }>,
@@ -19,6 +20,7 @@ export default async function MuralPelotaoPage(props: {
   const agora = new Date();
   const offset = agora.getTimezoneOffset() * 60000;
   const dataLocal = new Date(agora.getTime() - offset);
+  const anoAtual = agora.getFullYear();
 
   // Data Final: Hoje
   const defaultEnd = dataLocal.toISOString().split('T')[0];
@@ -31,6 +33,9 @@ export default async function MuralPelotaoPage(props: {
   const startDate = searchParams.start || defaultStart;
   const endDate = searchParams.end || defaultEnd;
 
+  // Data para o acumulado do ano
+  const inicioAno = `${anoAtual}-01-01`;
+
   // ==========================================
   // 2. BUSCAS NO BANCO DE DADOS
   // ==========================================
@@ -42,7 +47,6 @@ export default async function MuralPelotaoPage(props: {
   ] = await Promise.all([
     supabase.from("pelotoes").select("nome, igreja").eq("id", pelotao_id).single(),
     supabase.from("estudos_biblicos").select("id, licoes(id, numero_licao)"),
-    // ATUALIZADO: Agora buscamos a foto da dupla e o nome dos membros
     supabase.from("duplas").select(`
       id, 
       nome_dupla, 
@@ -50,35 +54,37 @@ export default async function MuralPelotaoPage(props: {
       membros_dupla(nome),
       estudantes(id, nome_pessoa, estudo_biblico_id, status)
     `).eq("pelotao_id", pelotao_id).order("nome_dupla"),
-    supabase.from("metas").select("*").eq("ano", new Date().getFullYear()).single()
+    
+    // ATUALIZAÇÃO: Busca a meta específica deste pelotão e deste ano
+    supabase.from("metas").select("*").eq("ano", anoAtual).eq("pelotao_id", pelotao_id).single()
   ]);
 
   if (!pelotao) return <div className="p-20 text-center text-2xl font-bold text-white">Pelotão não encontrado.</div>;
 
   const duplasIds = duplas?.map(d => d.id) || [];
-  const estudantesIds = duplas?.flatMap(d => d.estudantes.filter((e: any) => e.status === 'ativo').map((e: any) => e.id)) || [];
+  const estudantesAtivos = duplas?.flatMap(d => d.estudantes.filter((e: any) => e.status === 'ativo')) || [];
+  const estudantesIds = estudantesAtivos.map(e => e.id);
   
-  // Puxamos todo o histórico de progresso
+  // Buscamos o progresso total (para cálculos de parados e acumulados do ano)
   const { data: progressoTotal } = await supabase
     .from("progresso_estudo")
     .select("estudante_id, data_registro, licao:licoes(numero_licao)")
     .in("estudante_id", estudantesIds.length ? estudantesIds : ['00000000-0000-0000-0000-000000000000'])
+    .gte("data_registro", inicioAno) // Puxa desde o início do ano
     .order('data_registro', { ascending: false });
 
-  // Visitas filtradas pelo período
-  const { data: visitasLancadas } = await supabase
+  // Buscamos todas as visitas do ano para o pelotão (para o resumo acumulado)
+  const { data: visitasTotais } = await supabase
     .from("visitas")
     .select("id, dupla_id, nome_visitado, data_visita")
     .in("dupla_id", duplasIds.length ? duplasIds : ['00000000-0000-0000-0000-000000000000'])
-    .gte("data_visita", startDate)
-    .lte("data_visita", endDate)
+    .gte("data_visita", inicioAno)
     .order("data_visita", { ascending: false });
 
-  // ==========================================
-  // 3. CÁLCULOS RESUMIDOS PARA O RODAPÉ
-  // ==========================================
-  const estudosNoPeriodo = progressoTotal?.filter(p => p.data_registro >= startDate && p.data_registro <= endDate).length || 0;
-  const visitasNoPeriodo = visitasLancadas?.length || 0;
+  // Filtramos as visitas apenas para o período do calendário (para a Tabela de Visitas)
+  const visitasNoPeriodo = visitasTotais?.filter(v => 
+    v.data_visita >= startDate && v.data_visita <= endDate
+  ) || [];
 
   return (
     <div className="min-h-screen bg-[#0f1319] flex flex-col pb-12 font-sans selection:bg-primary/30 text-foreground">
@@ -92,6 +98,7 @@ export default async function MuralPelotaoPage(props: {
 
       <main className="max-w-7xl mx-auto w-full px-4 md:px-6 mt-6 space-y-8">
         
+        {/* GRUPO 1: ACOMPANHAMENTO DE ESTUDOS */}
         <TabelaEstudos 
           duplas={duplas || []} 
           estudosComLicoes={estudosComLicoes || []} 
@@ -100,14 +107,24 @@ export default async function MuralPelotaoPage(props: {
           endDate={endDate}
         />
 
+        {/* GRUPO 2: RELATÓRIO DE VISITAS */}
         <TabelaVisitas 
-          visitasLancadas={visitasLancadas || []} 
+          visitasLancadas={visitasNoPeriodo} 
           duplas={duplas || []} 
         />
 
-        <ResumoMetas 
-          estudosDaSemana={estudosNoPeriodo} 
-          visitasDaSemana={visitasNoPeriodo} 
+        {/* GRUPO 3: PAINEL DE INDICADORES (RESUMO) */}
+        <ResumoPeriodo 
+          estudantesAtivos={estudantesAtivos}
+          estudosComLicoes={estudosComLicoes || []}
+          progressoTotal={progressoTotal || []}
+          visitasTotais={visitasTotais || []}
+          startDate={startDate}
+          endDate={endDate}
+        />
+
+        {/* GRUPO 4: ALVO DE BATISMO ANUAL */}
+        <AlvoBatismo 
           metas={metas} 
         />
 

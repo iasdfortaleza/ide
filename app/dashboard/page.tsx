@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { 
   ShieldCheck, LogOut, LayoutDashboard, Lock, 
-  CalendarCheck, Users, Shield, BookOpen, UserCog, Globe, ChevronRight 
+  CalendarCheck, Users, Shield, BookOpen, UserCog, Globe, ChevronRight, Target 
 } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -96,6 +96,15 @@ export default async function DashboardPage() {
       roles: ["master"],
       cor: "text-purple-500",
       bgCor: "bg-purple-500/10"
+    },
+    { 
+      titulo: "Metas da Igreja", 
+      descricao: "Definir e atualizar alvos de batismo.", 
+      href: "/dashboard/metas", 
+      icon: Target, 
+      roles: ["master"],
+      cor: "text-emerald-500",
+      bgCor: "bg-emerald-500/10"
     },
     { 
       titulo: "Permissões de Acesso", 
