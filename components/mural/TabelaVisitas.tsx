@@ -10,7 +10,8 @@ export function TabelaVisitas({ visitasLancadas, duplas }: TabelaVisitasProps) {
     <details className="group bg-card/40 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden shadow-lg [&_summary::-webkit-details-marker]:hidden">
       <summary className="bg-muted/30 border-b border-border/50 py-2 px-4 flex items-center justify-between cursor-pointer hover:bg-muted/50 transition-colors">
         <div className="flex items-center gap-2">
-          <Users className="w-5 h-5 text-foreground/70" />
+          {/* Ícone atualizado para text-primary (Dourado) */}
+          <Users className="w-5 h-5 text-primary" />
           <h2 className="text-lg md:text-xl font-black uppercase tracking-widest text-foreground drop-shadow-sm leading-none">
             Relatório de <span className="text-primary">Visitas</span>
           </h2>

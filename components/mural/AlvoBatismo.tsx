@@ -17,7 +17,7 @@ export function AlvoBatismo({ metas }: AlvoBatismoProps) {
   const porcentagem = alvo > 0 ? Math.min(100, Math.round((alcancado / alvo) * 100)) : 0;
 
   return (
-    <details open className="group bg-card/40 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden shadow-lg [&_summary::-webkit-details-marker]:hidden">
+    <details className="group bg-card/40 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden shadow-lg [&_summary::-webkit-details-marker]:hidden">
       <summary className="bg-muted/30 border-b border-border/50 py-3 px-4 flex items-center justify-between cursor-pointer hover:bg-muted/50 transition-colors">
         <div className="flex items-center gap-2">
           <Target className="w-5 h-5 text-primary" />

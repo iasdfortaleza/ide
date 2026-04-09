@@ -118,7 +118,7 @@ export function TabelaEstudos({
       )}
 
       {/* ACORDEÃO E TABELA DE ESTUDOS */}
-      <details open className="group bg-card/40 backdrop-blur-sm border border-primary/20 rounded-xl overflow-hidden shadow-2xl shadow-primary/5 [&_summary::-webkit-details-marker]:hidden">
+      <details className="group bg-card/40 backdrop-blur-sm border border-primary/20 rounded-xl overflow-hidden shadow-2xl shadow-primary/5 [&_summary::-webkit-details-marker]:hidden">
         <summary className="bg-primary/10 border-b border-primary/20 py-2 px-4 flex items-center justify-between cursor-pointer hover:bg-primary/15 transition-colors">
           <div className="flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-primary" />

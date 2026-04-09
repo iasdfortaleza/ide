@@ -22,9 +22,6 @@ export function ResumoPeriodo({
   const dtStart = new Date(startDate);
   const dtEnd = new Date(endDate);
   
-  const diferencaTempo = Math.abs(dtEnd.getTime() - dtStart.getTime());
-  const diferencaDias = Math.ceil(diferencaTempo / (1000 * 60 * 60 * 24)) + 1; 
-
   const startFormatado = dtStart.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
   const endFormatado = dtEnd.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
 
@@ -118,7 +115,7 @@ export function ResumoPeriodo({
           </div>
           <div className="flex divide-x divide-border/50 flex-1 p-3">
             <div className="flex flex-col items-center justify-center flex-1 gap-1">
-              <span className="text-[9px] uppercase font-bold text-destructive/70 tracking-wider text-center">Hoje (+30d)</span>
+              <span className="text-[9px] uppercase font-bold text-destructive/70 tracking-wider text-center">Histórico</span>
               <span className="text-3xl font-black text-destructive/90">{parados30DiasHoje}</span>
             </div>
             <div className="flex flex-col items-center justify-center flex-1 gap-1">

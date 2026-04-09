@@ -192,7 +192,7 @@ export default async function LancamentosPage(props: { searchParams?: Promise<{ 
                             <div className="mt-3 space-y-2 max-h-40 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-primary/20">
                               {historicoEstudante.map((registro: any) => {
                                 return (
-                                  <form action={editarLancamentoEstudo} key={registro.id} className="flex items-center gap-2 p-2 bg-black/40 rounded-lg border border-white/5 group/item">
+                                  <form action={editarLancamentoEstudo} key={registro.id} className="flex items-center gap-2 p-2 bg-black/40 rounded-lg border border-white/5">
                                     <input type="hidden" name="id" value={registro.id} />
                                     <select 
                                       name="licao_id" 
@@ -209,7 +209,8 @@ export default async function LancamentosPage(props: { searchParams?: Promise<{ 
                                       defaultValue={registro.data_registro} 
                                       className="bg-transparent text-[10px] text-white/40 outline-none w-24" 
                                     />
-                                    <div className="ml-auto flex gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                    {/* Botões sempre visíveis */}
+                                    <div className="ml-auto flex gap-1">
                                       <button type="submit" title="Salvar" className="p-1.5 hover:bg-green-500/20 rounded text-green-500 transition-colors">
                                         <Save className="w-3 h-3" />
                                       </button>
@@ -277,7 +278,7 @@ export default async function LancamentosPage(props: { searchParams?: Promise<{ 
                             </div>
                           ) : (
                             historicoVisitas.map((visita: any) => (
-                              <form action={editarVisita} key={visita.id} className="flex flex-wrap items-center gap-2 p-2 bg-background/80 rounded-lg border border-border/50 group/item shadow-sm">
+                              <form action={editarVisita} key={visita.id} className="flex flex-wrap items-center gap-2 p-2 bg-background/80 rounded-lg border border-border/50 shadow-sm">
                                 <input type="hidden" name="id" value={visita.id} />
                                 
                                 <div className="flex-1 min-w-[120px]">
@@ -309,6 +310,7 @@ export default async function LancamentosPage(props: { searchParams?: Promise<{ 
                                   />
                                 </div>
 
+                                {/* Botões sempre visíveis */}
                                 <div className="flex gap-1 ml-auto">
                                   <button type="submit" title="Salvar" className="p-1.5 hover:bg-green-500/20 rounded text-green-500 transition-colors">
                                     <Save className="w-3.5 h-3.5" />
