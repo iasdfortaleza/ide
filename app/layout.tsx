@@ -15,6 +15,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Ide - Mural Missionário",
   description: "Painel de gestão e mural de acompanhamento para duplas missionárias.",
+  icons: {
+    icon: "/icon/favicon.png", // Caminho direto para a pasta public
+    shortcut: "/icon/favicon.png",
+    apple: "/icon/favicon.png",
+  },
 };
 
 export default function RootLayout({

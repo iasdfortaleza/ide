@@ -4,8 +4,39 @@ import Link from "next/link";
 import { ChristianPattern } from "@/components/home/ChristianPattern";
 import { getRankingPelotoes } from "@/services/ranking";
 import { PelotoesGrid } from "@/components/home/PelotoesGrid";
+import { Metadata } from "next";
 
-export const revalidate = 60; 
+export const revalidate = 60;
+
+// ==========================================
+// METADADOS DE COMPARTILHAMENTO (SEO/OG)
+// ==========================================
+export const metadata: Metadata = {
+  title: "Ide - Mural Missionário | IASD São Félix",
+  description: "Sistema de cadastro e acompanhamento de equipes missionárias para o projeto de expansão da Igreja Adventista em São Félix, Marabá-PA.",
+  openGraph: {
+    title: "Ide - Mural Missionário",
+    description: "Acompanhamento em tempo real das unidades e pelotões do projeto de expansão missionária em São Félix, Marabá-PA.",
+    url: "https://seu-dominio.com", // Substitua pelo seu domínio quando estiver online
+    siteName: "Ide Mural Missionário",
+    images: [
+      {
+        url: "/ensiando-a-palavra.jpeg", // Imagem que você salvou na pasta public
+        width: 1200,
+        height: 630,
+        alt: "Projeto Missionário IASD São Félix",
+      },
+    ],
+    locale: "pt_BR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ide - Mural Missionário",
+    description: "Acompanhamento em tempo real das unidades missionárias da IASD São Félix.",
+    images: ["/ensiando-a-palavra.jpeg"],
+  },
+};
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -54,7 +85,6 @@ export default async function HomePage() {
 
       {/* ================= CONTEÚDO VISUAL TESTE (A Grade) ================= */}
       <div className="relative z-10 flex h-full flex-col px-4 sm:px-8">
-        {/* Padding superior para fugir do título fixo */}
         <main className="min-h-0 flex-1 pt-24 sm:pt-28 pb-8 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <div className="mx-auto flex min-h-full max-w-[1600px] items-center justify-center">
             <PelotoesGrid pelotoes={pelotoesRanqueados} />
