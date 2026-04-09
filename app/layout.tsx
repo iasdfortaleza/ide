@@ -30,9 +30,13 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
+      // REMOVIDO: A classe 'dark' que estava forçando o tema escuro
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      {/* ADICIONADO: bg-background e text-foreground para puxar o fundo branco e texto escuro do globals.css */}
+      <body className="min-h-full flex flex-col bg-background text-foreground">
+        {children}
+      </body>
     </html>
   );
 }

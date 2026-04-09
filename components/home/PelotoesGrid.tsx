@@ -12,12 +12,12 @@ export function PelotoesGrid({ pelotoes }: PelotoesGridProps) {
 
   if (count === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-[2rem] border border-white/5 bg-white/5 px-12 py-14 text-center backdrop-blur-xl shadow-2xl">
-        <Shield className="mb-4 h-16 w-16 text-primary/40" />
-        <p className="text-lg font-bold uppercase tracking-[0.2em] text-white/80">
+      <div className="flex flex-col items-center justify-center rounded-[2rem] border border-border bg-card px-12 py-14 text-center shadow-lg backdrop-blur-sm">
+        <Shield className="mb-4 h-16 w-16 text-muted-foreground/50" />
+        <p className="text-lg font-bold uppercase tracking-[0.2em] text-foreground">
           Nenhum pelotão ativo
         </p>
-        <p className="mt-2 text-sm text-white/40">
+        <p className="mt-2 text-sm text-muted-foreground">
           Cadastre os pelotões no painel.
         </p>
       </div>
@@ -56,34 +56,38 @@ export function PelotoesGrid({ pelotoes }: PelotoesGridProps) {
       {pelotoes.map((pelotao, index) => {
         const rank = index + 1;
         
-        let badgeColor = "bg-[#1a1f26] text-white/70 border-white/10 shadow-lg";
-        let circleBorder = "border-white/10 bg-white/[0.05]";
-        let circleGlow = "shadow-[0_15px_40px_rgba(0,0,0,0.4)] group-hover:shadow-[0_0_50px_rgba(255,255,255,0.1)] group-hover:border-white/30 group-hover:bg-white/[0.1]";
-        let nameColor = "text-white/90 group-hover:text-white";
-        let ringColor = "ring-white/5";
-        let ptsColor = "text-primary";
+        // Padrões Base (A partir do 4º lugar)
+        // bg-secondary (Branco) com text-secondary-foreground (Azul) para contraste perfeito
+        let badgeColor = "bg-secondary text-secondary-foreground border-border shadow-lg";
+        let circleBorder = "border-border bg-card";
+        let circleGlow = "shadow-lg group-hover:shadow-xl group-hover:border-primary/40 group-hover:bg-accent/50";
+        let nameColor = "text-foreground/90 group-hover:text-foreground";
+        let ringColor = "ring-border";
+        let ptsColor = "text-foreground font-black drop-shadow-md";
         
+        // Pódio Vibrante (Adaptado dinamicamente para puxar a cor Primary pro 1º lugar)
         if (rank === 1) { 
-          badgeColor = "bg-gradient-to-br from-yellow-300 to-yellow-600 text-yellow-950 border-yellow-200 shadow-[0_0_20px_rgba(234,179,8,0.6)]";
-          circleBorder = "border-yellow-500/60 bg-yellow-500/10";
-          circleGlow = "shadow-[0_0_40px_rgba(234,179,8,0.3)] group-hover:shadow-[0_0_60px_rgba(234,179,8,0.5)] group-hover:border-yellow-400 group-hover:bg-yellow-500/20";
-          nameColor = "text-yellow-400 group-hover:text-yellow-300";
-          ringColor = "ring-yellow-500/30";
-          ptsColor = "text-yellow-400";
+          badgeColor = "bg-primary text-primary-foreground border-primary/50 shadow-lg";
+          circleBorder = "border-primary/60 bg-primary/10";
+          circleGlow = "shadow-[0_0_40px_rgba(var(--color-primary),0.3)] group-hover:shadow-[0_0_60px_rgba(var(--color-primary),0.5)] group-hover:border-primary group-hover:bg-primary/20";
+          nameColor = "text-primary group-hover:text-primary/90";
+          ringColor = "ring-primary/50";
+          ptsColor = "text-primary font-black drop-shadow-md";
         } else if (rank === 2) { 
-          badgeColor = "bg-gradient-to-br from-zinc-200 to-zinc-400 text-zinc-900 border-white shadow-[0_0_20px_rgba(212,212,216,0.5)]";
-          circleBorder = "border-zinc-400/60 bg-zinc-400/10";
-          circleGlow = "shadow-[0_0_30px_rgba(212,212,216,0.2)] group-hover:shadow-[0_0_50px_rgba(212,212,216,0.4)] group-hover:border-zinc-300 group-hover:bg-zinc-400/20";
-          nameColor = "text-zinc-300 group-hover:text-zinc-200";
-          ringColor = "ring-zinc-400/30";
-          ptsColor = "text-zinc-300";
+          // O 2º e 3º lugares mantêm classes fixas de prata e bronze, pois são texturas universais de medalhas
+          badgeColor = "bg-gradient-to-br from-zinc-100 to-zinc-300 text-zinc-900 border-zinc-400 shadow-lg";
+          circleBorder = "border-zinc-300/60 bg-zinc-300/10";
+          circleGlow = "shadow-[0_0_30px_rgba(212,212,216,0.3)] group-hover:shadow-[0_0_50px_rgba(212,212,216,0.5)] group-hover:border-zinc-300 group-hover:bg-zinc-300/20";
+          nameColor = "text-zinc-100 group-hover:text-white";
+          ringColor = "ring-zinc-300/50";
+          ptsColor = "text-zinc-200 font-black drop-shadow-md";
         } else if (rank === 3) { 
-          badgeColor = "bg-gradient-to-br from-amber-500 to-amber-700 text-amber-950 border-amber-300 shadow-[0_0_20px_rgba(217,119,6,0.5)]";
-          circleBorder = "border-amber-600/60 bg-amber-600/10";
-          circleGlow = "shadow-[0_0_30px_rgba(217,119,6,0.2)] group-hover:shadow-[0_0_50px_rgba(217,119,6,0.4)] group-hover:border-amber-500 group-hover:bg-amber-600/20";
-          nameColor = "text-amber-500 group-hover:text-amber-400";
-          ringColor = "ring-amber-600/30";
-          ptsColor = "text-amber-500";
+          badgeColor = "bg-gradient-to-br from-amber-400 to-amber-600 text-amber-950 border-amber-300 shadow-lg";
+          circleBorder = "border-amber-500/60 bg-amber-500/10";
+          circleGlow = "shadow-[0_0_30px_rgba(217,119,6,0.3)] group-hover:shadow-[0_0_50px_rgba(217,119,6,0.5)] group-hover:border-amber-400 group-hover:bg-amber-500/20";
+          nameColor = "text-amber-400 group-hover:text-amber-300";
+          ringColor = "ring-amber-500/50";
+          ptsColor = "text-amber-400 font-black drop-shadow-md";
         }
 
         return (
@@ -95,14 +99,14 @@ export function PelotoesGrid({ pelotoes }: PelotoesGridProps) {
             <div
               className={`relative ${circleSizeClass} rounded-[2rem] border p-2 backdrop-blur-xl transition-all duration-500 ease-out group-hover:-translate-y-2 group-hover:scale-[1.05] ${circleBorder} ${circleGlow}`}
             >
-              {/* O Rank desceu ligeiramente de -top-3 para -top-1 e -right-1 */}
               <div className={`absolute -top-1 -right-1 z-20 flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full border transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12 ${badgeColor}`}>
                 <span className="text-[11px] sm:text-xs font-black italic tracking-tighter">
                   {rank}º
                 </span>
               </div>
 
-              <div className={`relative h-full w-full overflow-hidden rounded-[1.5rem] bg-[#1a1f26] ring-1 ${ringColor}`}>
+              {/* Fundo interno dinâmico: puxando o secondary (Branco no nosso tema) */}
+              <div className={`relative h-full w-full overflow-hidden rounded-[1.5rem] bg-secondary ring-2 ${ringColor}`}>
                 {pelotao.url_imagem_estandarte ? (
                   <Image
                     src={pelotao.url_imagem_estandarte}
@@ -114,11 +118,10 @@ export function PelotoesGrid({ pelotoes }: PelotoesGridProps) {
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center">
-                    <Shield className="h-12 w-12 text-white/10 transition-colors duration-500 group-hover:text-primary/60" />
+                    <Shield className="h-12 w-12 text-primary/30 transition-colors duration-500 group-hover:text-primary/60" />
                   </div>
                 )}
-                
-                <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(0,0,0,0.3),transparent_40%)]" />
+                <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(0,0,0,0.1)] pointer-events-none" />
               </div>
             </div>
 
@@ -126,16 +129,16 @@ export function PelotoesGrid({ pelotoes }: PelotoesGridProps) {
               <h2 className={`line-clamp-2 text-sm font-extrabold leading-tight drop-shadow-md transition-colors duration-300 sm:text-base md:text-lg ${nameColor}`}>
                 {pelotao.nome}
               </h2>
-              <p className="mt-1 truncate text-[9px] font-black uppercase tracking-[0.2em] text-primary/70 transition-colors duration-300 group-hover:text-primary sm:text-[10px] md:text-[11px] drop-shadow-sm">
+              <p className="mt-1 truncate text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground transition-colors duration-300 group-hover:text-foreground/90 sm:text-[10px] md:text-[11px]">
                 {pelotao.igreja}
               </p>
               
-              <div className="mt-2.5 inline-flex items-center justify-center gap-2 rounded-full bg-white/[0.04] border border-white/10 px-3 py-1 opacity-70 group-hover:opacity-100 group-hover:bg-white/[0.08] transition-all">
-                <span className="text-[10px] sm:text-[11px] font-bold text-white/90">
+              <div className="mt-2.5 inline-flex items-center justify-center gap-2 rounded-full bg-muted border border-border px-3 py-1 opacity-90 group-hover:opacity-100 group-hover:bg-accent transition-all">
+                <span className="text-[10px] sm:text-[11px] font-bold text-foreground">
                   <span className={ptsColor}>{pelotao.pontos7Dias}</span> sem
                 </span>
-                <span className="w-px h-2.5 bg-white/30" />
-                <span className="text-[10px] sm:text-[11px] font-medium text-white/60">
+                <span className="w-px h-2.5 bg-border" />
+                <span className="text-[10px] sm:text-[11px] font-medium text-muted-foreground">
                   {pelotao.pontosTotal} total
                 </span>
               </div>

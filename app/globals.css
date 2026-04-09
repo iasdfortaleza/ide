@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Força a captura de todas as variáveis do sistema */
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -48,57 +49,59 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Aplicando o Dark Mode com Dourado como padrão absoluto */
+/* Paleta INSTITUCIONAL: Azul, Branco e Dourado */
 :root, .dark {
-  /* Fundo principal: Cinza bem escuro com tom levemente quente */
-  --background: oklch(0.16 0.01 85);
-  --foreground: oklch(0.95 0.01 85);
+  /* Fundo principal: Azul Institucional */
+  --background: #225DA1;
+  --foreground: #ffffff; /* Texto principal sempre branco */
   
-  /* Cards (como o do Login) e Popovers */
-  --card: oklch(0.20 0.01 85);
-  --card-foreground: oklch(0.95 0.01 85);
-  --popover: oklch(0.20 0.01 85);
-  --popover-foreground: oklch(0.95 0.01 85);
+  /* Cards e Popovers: Um azul levemente mais escuro e elegante para dar profundidade */
+  --card: #18457c; 
+  --card-foreground: #ffffff;
+  --popover: #18457c;
+  --popover-foreground: #ffffff;
   
-  /* Destaque Principal (O Dourado) */
-  --primary: oklch(0.76 0.14 85);
-  --primary-foreground: oklch(0.14 0.01 85); /* Texto escuro sobre botão dourado */
+  /* Destaque Principal: Dourado/Âmbar (Combina perfeitamente com Azul) */
+  --primary: #fbbf24;
+  --primary-foreground: #0f172a; /* Texto preto escuro dentro dos botões dourados */
   
-  /* Cores secundárias e botões inativos */
-  --secondary: oklch(0.25 0.01 85);
-  --secondary-foreground: oklch(0.95 0.01 85);
-  --muted: oklch(0.25 0.01 85);
-  --muted-foreground: oklch(0.65 0.01 85);
-  --accent: oklch(0.25 0.01 85);
-  --accent-foreground: oklch(0.95 0.01 85);
+  /* Cores secundárias: Elementos e botões brancos */
+  --secondary: #ffffff; 
+  --secondary-foreground: #225DA1; /* Texto azul dentro de botões brancos */
   
-  /* Alertas e Erros (Vermelho/Destrutivo) */
-  --destructive: oklch(0.60 0.18 25);
-  --destructive-foreground: oklch(0.95 0 0);
+  /* Muted e Accents: Tons translúcidos para contrastar suavemente com o azul */
+  --muted: rgba(255, 255, 255, 0.1); 
+  --muted-foreground: rgba(255, 255, 255, 0.7); /* Textos de apoio um pouco transparentes */
+  --accent: rgba(255, 255, 255, 0.15);
+  --accent-foreground: #ffffff;
   
-  /* Bordas, Inputs e Linhas de Foco (Foco em dourado) */
-  --border: oklch(0.28 0.01 85);
-  --input: oklch(0.28 0.01 85);
-  --ring: oklch(0.76 0.14 85);
+  /* Alertas (Vermelho vibrante) */
+  --destructive: #ef4444; 
+  --destructive-foreground: #ffffff;
   
-  /* Cores dos Gráficos e Barra de Progresso (Amarelo, Laranja, Azul, Verde) */
-  --chart-1: oklch(0.76 0.14 85); /* Amarelo Queimado / Dourado */
-  --chart-2: oklch(0.65 0.16 50); /* Laranja */
-  --chart-3: oklch(0.55 0.12 250); /* Azul */
-  --chart-4: oklch(0.60 0.15 140); /* Verde */
-  --chart-5: oklch(0.85 0.05 90);
+  /* Bordas e Inputs (Branco translúcido) */
+  --border: rgba(255, 255, 255, 0.2); 
+  --input: rgba(255, 255, 255, 0.15);
+  --ring: #fbbf24; /* Foco dos inputs na cor Dourada */
+  
+  /* Cores dos Gráficos e Barras de Progresso */
+  --chart-1: #fbbf24; /* Dourado */
+  --chart-2: #ffffff; /* Branco */
+  --chart-3: #60a5fa; /* Azul claro */
+  --chart-4: #34d399; /* Verde esmeralda */
+  --chart-5: #f87171; /* Vermelho */
   
   --radius: 0.5rem;
   
-  /* Sidebar (Painel lateral futuro) */
-  --sidebar: oklch(0.18 0.01 85);
-  --sidebar-foreground: oklch(0.95 0.01 85);
-  --sidebar-primary: oklch(0.76 0.14 85);
-  --sidebar-primary-foreground: oklch(0.14 0.01 85);
-  --sidebar-accent: oklch(0.25 0.01 85);
-  --sidebar-accent-foreground: oklch(0.95 0.01 85);
-  --sidebar-border: oklch(0.28 0.01 85);
-  --sidebar-ring: oklch(0.76 0.14 85);
+  /* Sidebar / Painel Lateral */
+  --sidebar: #18457c;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #fbbf24;
+  --sidebar-primary-foreground: #0f172a;
+  --sidebar-accent: rgba(255, 255, 255, 0.1);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.2);
+  --sidebar-ring: #fbbf24;
 }
 
 @layer base {
@@ -109,7 +112,8 @@
     @apply bg-background text-foreground;
   }
   html {
-    @apply font-sans;
-    color-scheme: dark; /* Força o navegador a entender que é dark mode */
+    @apply font-sans bg-background text-foreground;
+    /* Ajustado para dark para que as barras de rolagem e popups nativos fiquem com estilo noturno combinando com o azul escuro */
+    color-scheme: dark; 
   }
 }

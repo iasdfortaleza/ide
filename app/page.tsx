@@ -49,15 +49,21 @@ export default async function HomePage() {
   const pelotoesRanqueados = await getRankingPelotoes();
 
   return (
-    <div className="relative flex h-screen w-full flex-col overflow-hidden text-foreground bg-[#0f1319]">
+    // Usa bg-background (Azul institucional) e text-foreground (Branco)
+    <div className="relative flex h-screen w-full flex-col overflow-hidden text-foreground bg-background">
       
       {/* ================= BACKGROUND STUDIO ================= */}
-      <div className="absolute inset-0 z-0 text-white/[0.04]">
+      {/* Padrão cristão usa foreground (branco) com 5% de opacidade */}
+      <div className="absolute inset-0 z-0 text-foreground/[0.05]">
         <ChristianPattern />
       </div>
-      <div className="absolute -top-[15%] left-1/2 h-[50vh] w-[80vw] -translate-x-1/2 rounded-[100%] bg-primary/10 blur-[130px] mix-blend-screen pointer-events-none" />
-      <div className="absolute -bottom-[20%] left-1/2 h-[40vh] w-[70vw] -translate-x-1/2 rounded-[100%] bg-blue-500/5 blur-[120px] pointer-events-none" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,rgba(6,9,14,0.85)_100%)] pointer-events-none" />
+      
+      {/* Efeitos de luz baseados no foreground (branco) para brilhar no azul */}
+      <div className="absolute -top-[15%] left-1/2 h-[50vh] w-[80vw] -translate-x-1/2 rounded-[100%] bg-foreground/10 blur-[130px] mix-blend-screen pointer-events-none" />
+      <div className="absolute -bottom-[20%] left-1/2 h-[40vh] w-[70vw] -translate-x-1/2 rounded-[100%] bg-foreground/5 blur-[120px] pointer-events-none" />
+      
+      {/* Vinheta escura nas bordas para dar profundidade (preto/sombra é universal) */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,rgba(0,0,0,0.4)_100%)] pointer-events-none" />
 
       {/* ================= CONTEÚDO VISUAL (Cabeçalho + Grade) ================= */}
       <div className="relative z-10 flex h-full flex-col px-4 sm:px-8">
@@ -65,24 +71,25 @@ export default async function HomePage() {
           <div className="mx-auto flex min-h-full flex-col max-w-[1600px] items-center justify-center py-12 gap-8 sm:gap-12">
             
             {/* ================= CABEÇALHO ROLÁVEL ================= */}
-            <div className="flex flex-col items-center justify-center space-y-2">
+            <div className="flex flex-col items-center justify-center space-y-3">
               <Link
                 href={isLogged ? "/dashboard" : "/login"}
                 title={isLogged ? "Ir para o Dashboard" : "Acesso Administrativo"}
-                className="group"
+                // Removido bg-secondary, padding, rounded e shadow para tirar o círculo branco
+                className="group transition-all"
               >
                 <Image
                   src="/logo/logo-iasd.svg"
                   alt="Logo IASD"
                   width={48}
                   height={48}
-                  className="h-10 w-10 sm:h-12 sm:w-12 drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-transform duration-700 group-hover:scale-110"
+                  className="h-10 w-10 sm:h-12 sm:w-12 transition-transform duration-700 group-hover:scale-110"
                   priority
                 />
               </Link>
-              <h1 className="text-center text-lg font-black uppercase tracking-[0.2em] text-white/95 drop-shadow-lg sm:text-xl lg:text-2xl">
+              <h1 className="text-center text-lg font-black uppercase tracking-[0.2em] text-foreground drop-shadow-md sm:text-xl lg:text-2xl">
                 Mural{" "}
-                <span className="text-primary drop-shadow-[0_0_20px_rgba(212,175,55,0.4)]">
+                <span className="text-foreground/70">
                   Missionário
                 </span>
               </h1>
