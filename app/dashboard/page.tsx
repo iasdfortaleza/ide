@@ -59,7 +59,7 @@ export default async function DashboardPage() {
     );
   }
 
-  // 3. Definição dos Módulos do Sistema e suas Permissões
+  // 3. Definição dos Módulos do Sistema e suas Permissões (Padronizado na cor Primary/Dourada)
   const modulos = [
     { 
       titulo: "Rotina Missionária", 
@@ -67,8 +67,8 @@ export default async function DashboardPage() {
       href: "/dashboard/lancamentos", 
       icon: CalendarCheck, 
       roles: ["admin", "master"],
-      cor: "text-blue-500",
-      bgCor: "bg-blue-500/10"
+      cor: "text-primary",
+      bgCor: "bg-primary/10"
     },
     { 
       titulo: "Duplas Missionárias", 
@@ -76,8 +76,8 @@ export default async function DashboardPage() {
       href: "/dashboard/duplas", 
       icon: Users, 
       roles: ["admin", "master"],
-      cor: "text-orange-500",
-      bgCor: "bg-orange-500/10"
+      cor: "text-primary",
+      bgCor: "bg-primary/10"
     },
     { 
       titulo: "Gestão de Pelotões", 
@@ -94,8 +94,8 @@ export default async function DashboardPage() {
       href: "/dashboard/estudos", 
       icon: BookOpen, 
       roles: ["master"],
-      cor: "text-purple-500",
-      bgCor: "bg-purple-500/10"
+      cor: "text-primary",
+      bgCor: "bg-primary/10"
     },
     { 
       titulo: "Metas da Igreja", 
@@ -103,8 +103,8 @@ export default async function DashboardPage() {
       href: "/dashboard/metas", 
       icon: Target, 
       roles: ["master"],
-      cor: "text-emerald-500",
-      bgCor: "bg-emerald-500/10"
+      cor: "text-primary",
+      bgCor: "bg-primary/10"
     },
     { 
       titulo: "Permissões de Acesso", 
@@ -112,8 +112,8 @@ export default async function DashboardPage() {
       href: "/dashboard/usuarios", 
       icon: UserCog, 
       roles: ["master"],
-      cor: "text-red-500",
-      bgCor: "bg-red-500/10"
+      cor: "text-primary",
+      bgCor: "bg-primary/10"
     },
     { 
       titulo: "Mural Público", 
@@ -121,8 +121,8 @@ export default async function DashboardPage() {
       href: "/", 
       icon: Globe, 
       roles: ["admin", "master"],
-      cor: "text-green-500",
-      bgCor: "bg-green-500/10"
+      cor: "text-primary",
+      bgCor: "bg-primary/10"
     }
   ];
 
