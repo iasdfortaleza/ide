@@ -89,92 +89,92 @@ export function ResumoPeriodo({
   const visitasNoFiltro = visitasTotais.filter(v => v.data_visita >= startDate && v.data_visita <= endDate).length;
 
   return (
-    <details className="group bg-card/40 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden shadow-lg [&_summary::-webkit-details-marker]:hidden">
-      <summary className="bg-muted/30 border-b border-border/50 py-2 px-4 flex items-center justify-between cursor-pointer hover:bg-muted/50 transition-colors">
-        <div className="flex items-center gap-2">
+    <details className="group bg-card/60 backdrop-blur-md border border-border/50 rounded-xl overflow-hidden shadow-xl shadow-black/10 [&_summary::-webkit-details-marker]:hidden">
+      <summary className="bg-primary/10 border-b border-border/50 py-3 px-5 flex items-center justify-between cursor-pointer hover:bg-primary/20 transition-colors">
+        <div className="flex items-center gap-3">
           <Activity className="w-5 h-5 text-primary" />
           <div className="flex flex-col">
             <h2 className="text-lg md:text-xl font-black uppercase tracking-widest text-foreground drop-shadow-sm leading-none flex items-center gap-2">
               Painel de <span className="text-primary">Indicadores</span>
             </h2>
-            <span className="text-[10px] text-muted-foreground font-semibold mt-0.5 sm:mt-1">
+            <span className="text-[10px] text-muted-foreground font-bold mt-1 uppercase tracking-widest">
               Período: {startFormatado} a {endFormatado}
             </span>
           </div>
         </div>
-        <ChevronDown className="w-5 h-5 text-muted-foreground group-open:rotate-180 transition-transform duration-500" />
+        <ChevronDown className="w-5 h-5 text-primary group-open:rotate-180 transition-transform duration-500" />
       </summary>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 md:p-6 bg-background/20">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 md:p-6 bg-muted/5">
         
-        {/* 1. PARADOS */}
-        <div className="flex flex-col bg-card/80 border border-border/50 rounded-xl overflow-hidden shadow-sm">
+        {/* 1. PARADOS (Vermelho / Destructive) */}
+        <div className="flex flex-col bg-card border border-border/40 rounded-xl overflow-hidden shadow-sm hover:border-destructive/50 transition-colors">
           <div className="bg-destructive/10 border-b border-destructive/20 p-2.5 flex items-center justify-center gap-2">
             <AlertCircle className="w-4 h-4 text-destructive" />
             <h3 className="font-bold text-[11px] uppercase tracking-widest text-destructive">Estudos Parados</h3>
           </div>
-          <div className="flex divide-x divide-border/50 flex-1 p-3">
-            <div className="flex flex-col items-center justify-center flex-1 gap-1">
-              <span className="text-[9px] uppercase font-bold text-destructive/70 tracking-wider text-center">Histórico</span>
-              <span className="text-3xl font-black text-destructive/90">{parados30DiasHoje}</span>
-            </div>
-            <div className="flex flex-col items-center justify-center flex-1 gap-1">
-              <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">Neste Período</span>
-              <span className="text-3xl font-black text-foreground/80">{paradosNoFiltro}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* 2. REALIZADOS */}
-        <div className="flex flex-col bg-card/80 border border-border/50 rounded-xl overflow-hidden shadow-sm">
-          <div className="bg-blue-500/10 border-b border-blue-500/20 p-2.5 flex items-center justify-center gap-2">
-            <BookOpenCheck className="w-4 h-4 text-blue-500" />
-            <h3 className="font-bold text-[11px] uppercase tracking-widest text-blue-500">Realizados</h3>
-          </div>
-          <div className="flex divide-x divide-border/50 flex-1 p-3">
+          <div className="flex divide-x divide-border/30 flex-1 p-3">
             <div className="flex flex-col items-center justify-center flex-1 gap-1">
               <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">Histórico</span>
-              <span className="text-3xl font-black text-blue-500/90">{realizadosAcumulado}</span>
+              <span className="text-3xl font-black text-destructive">{parados30DiasHoje}</span>
             </div>
             <div className="flex flex-col items-center justify-center flex-1 gap-1">
               <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">Neste Período</span>
-              <span className="text-3xl font-black text-foreground/80">{realizadosNoFiltro}</span>
+              <span className="text-3xl font-black text-foreground">{paradosNoFiltro}</span>
             </div>
           </div>
         </div>
 
-        {/* 3. CONCLUÍDOS */}
-        <div className="flex flex-col bg-card/80 border border-border/50 rounded-xl overflow-hidden shadow-sm">
-          <div className="bg-green-500/10 border-b border-green-500/20 p-2.5 flex items-center justify-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-green-500" />
-            <h3 className="font-bold text-[11px] uppercase tracking-widest text-green-500">Concluídos</h3>
+        {/* 2. REALIZADOS (Azul) */}
+        <div className="flex flex-col bg-card border border-border/40 rounded-xl overflow-hidden shadow-sm hover:border-blue-400/50 transition-colors">
+          <div className="bg-blue-400/10 border-b border-blue-400/20 p-2.5 flex items-center justify-center gap-2">
+            <BookOpenCheck className="w-4 h-4 text-blue-400" />
+            <h3 className="font-bold text-[11px] uppercase tracking-widest text-blue-400">Realizados</h3>
           </div>
-          <div className="flex divide-x divide-border/50 flex-1 p-3">
+          <div className="flex divide-x divide-border/30 flex-1 p-3">
             <div className="flex flex-col items-center justify-center flex-1 gap-1">
               <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">Histórico</span>
-              <span className="text-3xl font-black text-green-500/90">{concluidosAcumulado}</span>
+              <span className="text-3xl font-black text-blue-400">{realizadosAcumulado}</span>
             </div>
             <div className="flex flex-col items-center justify-center flex-1 gap-1">
               <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">Neste Período</span>
-              <span className="text-3xl font-black text-foreground/80">{concluidosNoFiltro}</span>
+              <span className="text-3xl font-black text-foreground">{realizadosNoFiltro}</span>
             </div>
           </div>
         </div>
 
-        {/* 4. VISITAS */}
-        <div className="flex flex-col bg-card/80 border border-border/50 rounded-xl overflow-hidden shadow-sm">
+        {/* 3. CONCLUÍDOS (Verde) */}
+        <div className="flex flex-col bg-card border border-border/40 rounded-xl overflow-hidden shadow-sm hover:border-green-400/50 transition-colors">
+          <div className="bg-green-400/10 border-b border-green-400/20 p-2.5 flex items-center justify-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-green-400" />
+            <h3 className="font-bold text-[11px] uppercase tracking-widest text-green-400">Concluídos</h3>
+          </div>
+          <div className="flex divide-x divide-border/30 flex-1 p-3">
+            <div className="flex flex-col items-center justify-center flex-1 gap-1">
+              <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">Histórico</span>
+              <span className="text-3xl font-black text-green-400">{concluidosAcumulado}</span>
+            </div>
+            <div className="flex flex-col items-center justify-center flex-1 gap-1">
+              <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">Neste Período</span>
+              <span className="text-3xl font-black text-foreground">{concluidosNoFiltro}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 4. VISITAS (Dourado/Primary) */}
+        <div className="flex flex-col bg-card border border-border/40 rounded-xl overflow-hidden shadow-sm hover:border-primary/50 transition-colors">
           <div className="bg-primary/10 border-b border-primary/20 p-2.5 flex items-center justify-center gap-2">
             <Users className="w-4 h-4 text-primary" />
             <h3 className="font-bold text-[11px] uppercase tracking-widest text-primary">Visitas</h3>
           </div>
-          <div className="flex divide-x divide-border/50 flex-1 p-3">
+          <div className="flex divide-x divide-border/30 flex-1 p-3">
             <div className="flex flex-col items-center justify-center flex-1 gap-1">
               <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">Histórico</span>
-              <span className="text-3xl font-black text-primary/90">{visitasAcumulado}</span>
+              <span className="text-3xl font-black text-primary">{visitasAcumulado}</span>
             </div>
             <div className="flex flex-col items-center justify-center flex-1 gap-1">
               <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">Neste Período</span>
-              <span className="text-3xl font-black text-foreground/80">{visitasNoFiltro}</span>
+              <span className="text-3xl font-black text-foreground">{visitasNoFiltro}</span>
             </div>
           </div>
         </div>

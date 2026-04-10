@@ -20,7 +20,6 @@ export default async function MuralPelotaoPage(props: {
   const agora = new Date();
   const offset = agora.getTimezoneOffset() * 60000;
   const dataLocal = new Date(agora.getTime() - offset);
-  const anoAtual = agora.getFullYear();
 
   // Data Final: Hoje
   const defaultEnd = dataLocal.toISOString().split('T')[0];
@@ -40,7 +39,7 @@ export default async function MuralPelotaoPage(props: {
     { data: pelotao },
     { data: estudosComLicoes },
     { data: duplas },
-    { data: metas }
+    { data: metas } // Vai trazer uma array com 1 item (o mais recente)
   ] = await Promise.all([
     supabase.from("pelotoes").select("nome, igreja").eq("id", pelotao_id).single(),
     supabase.from("estudos_biblicos").select("id, licoes(id, numero_licao)"),
@@ -52,37 +51,41 @@ export default async function MuralPelotaoPage(props: {
       estudantes(id, nome_pessoa, estudo_biblico_id, status)
     `).eq("pelotao_id", pelotao_id).order("nome_dupla"),
     
-    supabase.from("metas").select("*").eq("ano", anoAtual).eq("pelotao_id", pelotao_id).single()
+    // NOVA LÓGICA: Pega a meta com o maior ANO cadastrado para este pelotão
+    supabase.from("metas")
+      .select("*")
+      .eq("pelotao_id", pelotao_id)
+      .order("ano", { ascending: false })
+      .limit(1)
   ]);
 
-  if (!pelotao) return <div className="p-20 text-center text-2xl font-bold text-white">Pelotão não encontrado.</div>;
+  if (!pelotao) return <div className="p-20 text-center text-2xl font-bold text-foreground">Pelotão não encontrado.</div>;
+
+  // Como limitamos a 1, pegamos o primeiro item da array (se existir)
+  const metaMaisRecente = metas && metas.length > 0 ? metas[0] : null;
 
   const duplasIds = duplas?.map(d => d.id) || [];
   const estudantesAtivos = duplas?.flatMap(d => d.estudantes.filter((e: any) => e.status === 'ativo')) || [];
   const estudantesIds = estudantesAtivos.map(e => e.id);
   
-  // REMOVIDO .gte("data_registro", inicioAno) para permitir que o componente 
-  // filtre qualquer data selecionada no calendário.
   const { data: progressoTotal } = await supabase
     .from("progresso_estudo")
     .select("estudante_id, data_registro, licao:licoes(numero_licao)")
     .in("estudante_id", estudantesIds.length ? estudantesIds : ['00000000-0000-0000-0000-000000000000'])
     .order('data_registro', { ascending: false });
 
-  // REMOVIDO .gte("data_visita", inicioAno) pelo mesmo motivo.
   const { data: visitasTotais } = await supabase
     .from("visitas")
     .select("id, dupla_id, nome_visitado, data_visita")
     .in("dupla_id", duplasIds.length ? duplasIds : ['00000000-0000-0000-0000-000000000000'])
     .order("data_visita", { ascending: false });
 
-  // Filtramos as visitas para o período do calendário
   const visitasNoPeriodo = visitasTotais?.filter(v => 
     v.data_visita >= startDate && v.data_visita <= endDate
   ) || [];
 
   return (
-    <div className="min-h-screen bg-[#0f1319] flex flex-col pb-12 font-sans selection:bg-primary/30 text-foreground">
+    <div className="min-h-screen bg-background flex flex-col pb-12 font-sans selection:bg-primary/30 text-foreground">
       
       <MuralHeader 
         nome={pelotao.nome} 
@@ -93,7 +96,6 @@ export default async function MuralPelotaoPage(props: {
 
       <main className="max-w-7xl mx-auto w-full px-4 md:px-6 mt-6 space-y-8">
         
-        {/* GRUPO 1: ACOMPANHAMENTO DE ESTUDOS */}
         <TabelaEstudos 
           duplas={duplas || []} 
           estudosComLicoes={estudosComLicoes || []} 
@@ -102,13 +104,11 @@ export default async function MuralPelotaoPage(props: {
           endDate={endDate}
         />
 
-        {/* GRUPO 2: RELATÓRIO DE VISITAS */}
         <TabelaVisitas 
           visitasLancadas={visitasNoPeriodo} 
           duplas={duplas || []} 
         />
 
-        {/* GRUPO 3: PAINEL DE INDICADORES (RESUMO) */}
         <ResumoPeriodo 
           estudantesAtivos={estudantesAtivos}
           estudosComLicoes={estudosComLicoes || []}
@@ -118,9 +118,9 @@ export default async function MuralPelotaoPage(props: {
           endDate={endDate}
         />
 
-        {/* GRUPO 4: ALVO DE BATISMO ANUAL */}
+        {/* Passa a meta mais recente em vez da meta do ano atual */}
         <AlvoBatismo 
-          metas={metas} 
+          metas={metaMaisRecente} 
         />
 
       </main>

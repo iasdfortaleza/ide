@@ -116,4 +116,13 @@
     /* Ajustado para dark para que as barras de rolagem e popups nativos fiquem com estilo noturno combinando com o azul escuro */
     color-scheme: dark; 
   }
+  
+  /* ========================================================
+     CORREÇÃO GLOBAL DOS SELECTS (MENUS DROPDOWN NATIVOS)
+     Força todos os <option> do sistema a terem fundo azul
+     institucional e texto branco, garantindo a leitura.
+     ======================================================== */
+  option {
+    @apply bg-background text-foreground;
+  }
 }

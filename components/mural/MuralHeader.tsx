@@ -15,15 +15,16 @@ export function MuralHeader({ nome, igreja, startDate, endDate }: MuralHeaderPro
     <header className="w-full bg-card/90 backdrop-blur-xl border-b border-border/50 px-4 md:px-8 py-3 flex items-center justify-between sticky top-0 z-50 shadow-sm">
       <div className="flex items-center gap-4">
         <Link href="/">
-          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary rounded-full hover:bg-primary/10">
+          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary rounded-full hover:bg-primary/10 transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </Button>
         </Link>
         <div className="flex flex-col">
+          {/* Nome do pelotão em Dourado (text-primary) */}
           <h1 className="text-lg md:text-2xl font-black text-primary tracking-widest uppercase leading-none drop-shadow-sm">
             {nome}
           </h1>
-          <p className="text-[10px] md:text-xs text-muted-foreground font-medium tracking-widest uppercase flex items-center gap-1">
+          <p className="text-[10px] md:text-xs text-muted-foreground font-medium tracking-widest uppercase flex items-center gap-1 mt-1">
             <MapPin className="w-3 h-3" /> {igreja}
           </p>
         </div>
@@ -43,12 +44,14 @@ export function MuralHeader({ nome, igreja, startDate, endDate }: MuralHeaderPro
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-[10px] uppercase font-bold text-muted-foreground">Data Inicial</label>
-              <Input type="date" name="start" defaultValue={startDate} className="h-8 text-xs bg-background" />
+              {/* Inputs usando as variáveis transparentes (bg-input) e texto branco (text-foreground) */}
+              <Input type="date" name="start" defaultValue={startDate} className="h-8 text-xs bg-input text-foreground border-border/50 focus:ring-primary" />
               
               <label className="text-[10px] uppercase font-bold text-muted-foreground">Data Final</label>
-              <Input type="date" name="end" defaultValue={endDate} className="h-8 text-xs bg-background" />
+              <Input type="date" name="end" defaultValue={endDate} className="h-8 text-xs bg-input text-foreground border-border/50 focus:ring-primary" />
             </div>
-            <Button type="submit" size="sm" className="h-8 text-xs font-bold w-full mt-2">
+            {/* O botão principal automaticamente puxa bg-primary (Dourado) e text-primary-foreground (Escuro) */}
+            <Button type="submit" size="sm" className="h-8 text-xs font-bold w-full mt-2 shadow-md">
               Aplicar Filtro
             </Button>
           </form>

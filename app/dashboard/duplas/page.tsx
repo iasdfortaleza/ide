@@ -59,22 +59,22 @@ export default async function DuplasPage() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-8">
+    <div className="p-6 max-w-7xl mx-auto space-y-8 bg-background min-h-screen text-foreground">
       
       {/* Cabeçalho com Botão de Voltar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Users className="w-8 h-8 text-primary" />
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Duplas Missionárias</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-3xl font-black tracking-tight text-foreground drop-shadow-sm">Duplas Missionárias</h1>
+            <p className="text-sm font-medium tracking-widest uppercase text-muted-foreground mt-1">
               {isMaster ? "Visão Global (Master)" : "Visão do Capitão (Admin)"}
             </p>
           </div>
         </div>
 
         <Link href="/dashboard">
-          <Button variant="outline" size="sm" className="gap-2 border-border/50 hover:bg-muted/50 transition-colors">
+          <Button variant="outline" size="sm" className="gap-2 border-border hover:bg-muted transition-colors bg-card">
             <ArrowLeft className="w-4 h-4" /> Voltar ao Painel
           </Button>
         </Link>
@@ -84,42 +84,43 @@ export default async function DuplasPage() {
         
         {/* COLUNA ESQUERDA: Formulário para Criar Dupla */}
         <div className="lg:col-span-1">
-          <Card className="border-primary/20 bg-card/50 backdrop-blur-md sticky top-24 shadow-md">
-            <CardHeader>
-              <CardTitle className="text-xl">Nova Dupla</CardTitle>
-              <CardDescription>Crie a base da dupla para depois adicionar os membros.</CardDescription>
+          <Card className="border-border bg-card/80 backdrop-blur-md sticky top-24 shadow-xl">
+            <CardHeader className="border-b border-border/50 pb-4">
+              <CardTitle className="text-xl font-bold">Nova Dupla</CardTitle>
+              <CardDescription className="text-muted-foreground">Crie a base da dupla para depois adicionar os membros.</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-4">
               {pelotoesIds.length === 0 ? (
-                <div className="p-4 bg-destructive/10 text-destructive text-sm rounded-md border border-destructive/20">
+                <div className="p-4 bg-destructive/10 text-destructive text-sm rounded-md border border-destructive/20 font-medium">
                   Você precisa de um Pelotão para cadastrar duplas. Se você é Admin, peça ao Master para te vincular a um Pelotão.
                 </div>
               ) : (
                 <form action={criarDupla} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="nome_dupla">Nome da Dupla</Label>
-                    <Input id="nome_dupla" name="nome_dupla" placeholder="Ex: Dupla Fé e Ação" required className="bg-background/50" />
+                  <div className="space-y-1.5">
+                    <Label htmlFor="nome_dupla" className="text-foreground/90 font-medium">Nome da Dupla</Label>
+                    <Input id="nome_dupla" name="nome_dupla" placeholder="Ex: Dupla Fé e Ação" required className="bg-input border-border focus-visible:ring-primary text-foreground" />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="pelotao_id">Vincular ao Pelotão</Label>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="pelotao_id" className="text-foreground/90 font-medium">Vincular ao Pelotão</Label>
                     <select 
                       id="pelotao_id" name="pelotao_id" required defaultValue="" 
-                      className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background focus:ring-2 focus:ring-primary"
+                      className="flex h-10 w-full rounded-md border border-border bg-input px-3 py-2 text-sm text-foreground ring-offset-background focus:ring-2 focus:ring-primary focus:outline-none"
                     >
-                      <option value="" disabled>Selecione...</option>
+                      {/* CORREÇÃO APLICADA: Forçando cor de fundo e texto no option */}
+                      <option value="" disabled className="bg-background text-muted-foreground">Selecione...</option>
                       {pelotoes?.map(p => (
-                        <option key={p.id} value={p.id}>{p.nome}</option>
+                        <option key={p.id} value={p.id} className="bg-background text-foreground">{p.nome}</option>
                       ))}
                     </select>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="foto">Foto da Dupla (Opcional)</Label>
-                    <Input id="foto" name="foto" type="file" accept="image/*" className="cursor-pointer file:text-primary file:bg-primary/10 hover:file:bg-primary/20" />
+                  <div className="space-y-1.5">
+                    <Label htmlFor="foto" className="text-foreground/90 font-medium">Foto da Dupla (Opcional)</Label>
+                    <Input id="foto" name="foto" type="file" accept="image/*" className="cursor-pointer border-border bg-input file:text-primary-foreground file:bg-primary file:border-0 file:rounded hover:file:bg-primary/90 text-foreground" />
                   </div>
 
-                  <Button type="submit" className="w-full mt-4 font-bold shadow-md hover:shadow-primary/25">
+                  <Button type="submit" className="w-full mt-4 font-bold text-primary-foreground shadow-lg hover:shadow-primary/25 transition-all hover:-translate-y-0.5">
                     Criar Dupla
                   </Button>
                 </form>
@@ -130,12 +131,14 @@ export default async function DuplasPage() {
 
         {/* COLUNA DIREITA: Lista de Duplas e Gestão de Membros/Estudantes (ACORDEÃO AQUI) */}
         <div className="lg:col-span-2 space-y-6">
-          <h2 className="text-xl font-bold tracking-tight">Duplas Ativas ({duplas.length})</h2>
+          <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            Duplas Ativas <span className="bg-primary text-primary-foreground px-2 py-0.5 rounded-full text-xs">{duplas.length}</span>
+          </h2>
           
           {duplas.length === 0 ? (
-            <div className="p-10 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center text-muted-foreground bg-card/10">
+            <div className="p-10 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center text-muted-foreground bg-card/40">
               <Users className="w-10 h-10 mb-2 opacity-20" />
-              <p>Nenhuma dupla encontrada no seu pelotão.</p>
+              <p className="font-medium tracking-wide">Nenhuma dupla encontrada no seu pelotão.</p>
             </div>
           ) : (
             <div className="grid gap-6">
@@ -145,13 +148,13 @@ export default async function DuplasPage() {
                 const nomeDoPelotao = pelotaoObj?.nome || "Sem pelotão";
 
                 return (
-                  <details key={dupla.id} className="group border border-primary/20 bg-card/50 backdrop-blur-md rounded-xl overflow-hidden shadow-sm [&_summary::-webkit-details-marker]:hidden">
+                  <details key={dupla.id} className="group border border-border bg-card/80 backdrop-blur-md rounded-xl overflow-hidden shadow-lg [&_summary::-webkit-details-marker]:hidden">
                     
                     {/* CABEÇALHO DO ACORDEÃO (Resumo da Dupla) */}
-                    <summary className="bg-muted/30 p-4 border-b border-border/50 flex justify-between items-center cursor-pointer list-none hover:bg-muted/50 transition-colors">
+                    <summary className="bg-muted/10 p-4 border-b border-border flex justify-between items-center cursor-pointer list-none hover:bg-muted/30 transition-colors">
                       
                       <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-full bg-background relative flex items-center justify-center overflow-hidden border-2 border-primary/20 shrink-0 shadow-sm">
+                        <div className="w-14 h-14 rounded-full bg-secondary relative flex items-center justify-center overflow-hidden border-2 border-primary/40 shrink-0 shadow-sm">
                           {dupla.url_foto_dupla ? (
                             <Image 
                               src={dupla.url_foto_dupla} 
@@ -161,15 +164,15 @@ export default async function DuplasPage() {
                               className="object-cover" 
                             />
                           ) : (
-                            <ImageIcon className="w-5 h-5 text-muted-foreground/30" />
+                            <ImageIcon className="w-6 h-6 text-secondary-foreground/30" />
                           )}
                         </div>
                         <div>
                           <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                             {dupla.nome_dupla} 
                           </h3>
-                          <p className="text-xs text-primary font-medium flex items-center gap-1 mt-0.5">
-                            <Shield className="w-3 h-3" /> {nomeDoPelotao}
+                          <p className="text-xs text-primary font-bold uppercase tracking-widest flex items-center gap-1 mt-1">
+                            <Shield className="w-3.5 h-3.5" /> {nomeDoPelotao}
                           </p>
                         </div>
                       </div>
@@ -177,10 +180,10 @@ export default async function DuplasPage() {
                       <div className="flex items-center gap-4">
                         <form action={async () => { "use server"; await excluirDupla(dupla.id); }}>
                           <Button type="submit" variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0" title="Excluir Dupla Inteira">
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-5 h-5" />
                           </Button>
                         </form>
-                        <ChevronDown className="w-6 h-6 text-muted-foreground group-open:rotate-180 transition-transform duration-300" />
+                        <ChevronDown className="w-6 h-6 text-primary group-open:rotate-180 transition-transform duration-500" />
                       </div>
                     </summary>
                     
@@ -188,34 +191,35 @@ export default async function DuplasPage() {
                     <div className="flex flex-col">
                       
                       {/* FORMULÁRIO DE EDIÇÃO DA DUPLA */}
-                      <div className="p-4 border-b border-primary/20 bg-background/80 shadow-inner">
+                      <div className="p-4 border-b border-border bg-card shadow-inner">
                         <form action={editarDupla} className="flex flex-col gap-3">
                           <input type="hidden" name="id" value={dupla.id} />
                           <input type="hidden" name="foto_atual" value={dupla.url_foto_dupla || ""} />
                           
                           <div className="flex flex-col sm:flex-row gap-3 items-end">
                             <div className="space-y-1 flex-1 w-full">
-                              <Label className="text-[10px] uppercase font-bold text-muted-foreground">Nome da Dupla</Label>
-                              <Input name="nome_dupla" defaultValue={dupla.nome_dupla} required className="h-8 text-xs bg-background" />
+                              <Label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Nome da Dupla</Label>
+                              <Input name="nome_dupla" defaultValue={dupla.nome_dupla} required className="h-9 text-xs bg-input border-border text-foreground focus-visible:ring-primary" />
                             </div>
                             <div className="space-y-1 flex-1 w-full">
-                              <Label className="text-[10px] uppercase font-bold text-muted-foreground">Pelotão</Label>
-                              <select name="pelotao_id" defaultValue={dupla.pelotao_id} required className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-xs">
-                                {pelotoes?.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
+                              <Label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Pelotão</Label>
+                              <select name="pelotao_id" defaultValue={dupla.pelotao_id} required className="flex h-9 w-full rounded-md border border-border bg-input px-2 text-xs text-foreground focus:ring-2 focus:ring-primary focus:outline-none">
+                                {/* CORREÇÃO APLICADA AQUI TAMBÉM */}
+                                {pelotoes?.map(p => <option key={p.id} value={p.id} className="bg-background text-foreground">{p.nome}</option>)}
                               </select>
                             </div>
                             <div className="space-y-1 flex-1 w-full">
-                              <Label className="text-[10px] uppercase font-bold text-muted-foreground">Nova Foto</Label>
-                              <Input name="foto" type="file" accept="image/*" className="h-8 text-xs bg-background" />
+                              <Label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Nova Foto</Label>
+                              <Input name="foto" type="file" accept="image/*" className="h-9 text-xs bg-input border-border text-foreground file:bg-muted file:text-foreground file:border-0" />
                             </div>
-                            <Button type="submit" size="sm" className="h-8 text-xs font-bold w-full sm:w-auto">Salvar Dupla</Button>
+                            <Button type="submit" size="sm" className="h-9 text-xs font-bold w-full sm:w-auto shadow-sm">Salvar Dupla</Button>
                           </div>
                           
                           {/* CHECKBOX DE REMOVER FOTO */}
                           {dupla.url_foto_dupla && (
                             <div className="flex items-center gap-2 mt-2 bg-destructive/10 border border-destructive/20 w-fit px-3 py-1.5 rounded-md">
                               <input type="checkbox" id={`remover_foto_${dupla.id}`} name="remover_foto" value="true" className="w-3.5 h-3.5 accent-destructive cursor-pointer" />
-                              <Label htmlFor={`remover_foto_${dupla.id}`} className="text-[10px] uppercase font-bold text-destructive cursor-pointer">
+                              <Label htmlFor={`remover_foto_${dupla.id}`} className="text-[10px] uppercase font-bold text-destructive cursor-pointer tracking-wider">
                                 Apagar foto atual (Deixar sem foto)
                               </Label>
                             </div>
@@ -224,48 +228,48 @@ export default async function DuplasPage() {
                       </div>
 
                       {/* CORPO: MEMBROS E ESTUDANTES */}
-                      <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border/50">
+                      <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border">
                         
                         {/* LADO A: MEMBROS DA DUPLA */}
-                        <div className="p-4 flex flex-col">
-                          <h4 className="text-sm font-bold uppercase text-muted-foreground mb-3 flex items-center gap-2">
-                            <UserPlus className="w-4 h-4" /> Componentes ({dupla.membros?.length})
+                        <div className="p-4 flex flex-col bg-card/50">
+                          <h4 className="text-sm font-black uppercase text-foreground tracking-widest mb-4 flex items-center gap-2">
+                            <UserPlus className="w-4 h-4 text-primary" /> Componentes ({dupla.membros?.length})
                           </h4>
                           
-                          <ul className="space-y-2 mb-4 flex-1">
+                          <ul className="space-y-3 mb-4 flex-1">
                             {dupla.membros?.map((membro: any, mIndex: number) => {
-                              // Variação de cor para membros
-                              const bgMembro = mIndex % 2 === 0 ? "bg-background/80" : "bg-muted/10";
+                              // Variação de cor para membros limpa com variáveis
+                              const bgMembro = mIndex % 2 === 0 ? "bg-background/20" : "bg-muted/10";
 
                               return (
-                                <li key={membro.id} className={`${bgMembro} rounded-md border border-border/50 flex flex-col group/item relative overflow-hidden shadow-sm`}>
+                                <li key={membro.id} className={`${bgMembro} rounded-lg border border-border/50 flex flex-col group/item relative overflow-hidden shadow-sm`}>
                                   <details className="[&_summary::-webkit-details-marker]:hidden">
-                                    <summary className="p-2 flex justify-between items-start cursor-pointer list-none hover:bg-muted/50 transition-colors">
+                                    <summary className="p-3 flex justify-between items-start cursor-pointer list-none hover:bg-muted/30 transition-colors">
                                       <div className="flex-1 pr-2">
-                                        <p className="font-semibold text-sm">{membro.nome}</p>
-                                        <div className="text-[10px] text-muted-foreground mt-0.5 space-y-0.5">
+                                        <p className="font-bold text-sm text-foreground/90">{membro.nome}</p>
+                                        <div className="text-[10px] text-muted-foreground mt-1 space-y-0.5 font-medium">
                                           <p>Whats: {membro.whatsapp || "N/A"} • Nasc: {membro.data_nascimento ? new Date(membro.data_nascimento).toLocaleDateString('pt-BR', {timeZone: 'UTC'}) : "N/A"}</p>
                                           {membro.endereco && <p className="truncate" title={membro.endereco}>End: {membro.endereco}</p>}
                                         </div>
                                       </div>
                                       <div className="flex gap-2 opacity-0 group-hover/item:opacity-100 transition-opacity items-center">
-                                        <Pencil className="w-3.5 h-3.5 text-primary" />
+                                        <Pencil className="w-4 h-4 text-primary" />
                                         <form action={async () => { "use server"; await excluirMembro(membro.id); }}>
-                                          <button type="submit" className="text-destructive hover:scale-110 transition-transform"><Trash2 className="w-3.5 h-3.5" /></button>
+                                          <button type="submit" className="text-destructive hover:scale-110 transition-transform"><Trash2 className="w-4 h-4" /></button>
                                         </form>
                                       </div>
                                     </summary>
                                     
-                                    <div className="p-3 border-t border-primary/20 bg-primary/5 cursor-default">
-                                      <form action={editarMembro} className="space-y-2">
+                                    <div className="p-3 border-t border-border/50 bg-card cursor-default">
+                                      <form action={editarMembro} className="space-y-2.5">
                                         <input type="hidden" name="id" value={membro.id} />
-                                        <Input name="nome" defaultValue={membro.nome} required className="h-7 text-xs bg-background" placeholder="Nome completo" />
+                                        <Input name="nome" defaultValue={membro.nome} required className="h-8 text-xs bg-input border-border text-foreground" placeholder="Nome completo" />
                                         <div className="grid grid-cols-2 gap-2">
-                                          <Input name="whatsapp" defaultValue={membro.whatsapp} className="h-7 text-xs bg-background" placeholder="WhatsApp" />
-                                          <Input name="data_nascimento" type="date" defaultValue={membro.data_nascimento} className="h-7 text-xs bg-background" />
+                                          <Input name="whatsapp" defaultValue={membro.whatsapp} className="h-8 text-xs bg-input border-border text-foreground" placeholder="WhatsApp" />
+                                          <Input name="data_nascimento" type="date" defaultValue={membro.data_nascimento} className="h-8 text-xs bg-input border-border text-foreground" />
                                         </div>
-                                        <Input name="endereco" defaultValue={membro.endereco} className="h-7 text-xs bg-background" placeholder="Endereço" />
-                                        <Button type="submit" size="sm" className="h-7 text-xs w-full font-bold">Salvar Alterações</Button>
+                                        <Input name="endereco" defaultValue={membro.endereco} className="h-8 text-xs bg-input border-border text-foreground" placeholder="Endereço" />
+                                        <Button type="submit" size="sm" variant="secondary" className="h-8 text-xs w-full font-bold border border-border">Salvar Alterações</Button>
                                       </form>
                                     </div>
                                   </details>
@@ -275,67 +279,70 @@ export default async function DuplasPage() {
                           </ul>
 
                           {/* FORMULÁRIO PARA ADICIONAR MEMBRO */}
-                          <form action={adicionarMembro} className="space-y-2 mt-auto p-3 bg-muted/10 rounded-md border border-dashed border-border/50">
+                          <form action={adicionarMembro} className="space-y-2.5 mt-auto p-4 bg-muted/5 rounded-lg border border-dashed border-border shadow-inner">
                             <input type="hidden" name="dupla_id" value={dupla.id} />
-                            <div className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1 mb-1"><Plus className="w-3 h-3"/> Novo Componente</div>
-                            
-                            <Input name="nome" placeholder="Nome completo" required className="h-8 text-xs bg-background" />
-                            <div className="grid grid-cols-2 gap-2">
-                              <Input name="whatsapp" placeholder="WhatsApp" className="h-8 text-xs bg-background" />
-                              <Input name="data_nascimento" type="date" className="h-8 text-xs bg-background" title="Data de Nascimento" />
+                            <div className="text-[11px] uppercase font-black tracking-widest text-muted-foreground flex items-center gap-1 mb-2">
+                              <Plus className="w-3.5 h-3.5"/> Novo Componente
                             </div>
-                            <Input name="endereco" placeholder="Endereço" className="h-8 text-xs bg-background" />
-                            <Button type="submit" size="sm" className="h-8 px-3 w-full font-bold">Adicionar à Dupla</Button>
+                            
+                            <Input name="nome" placeholder="Nome completo" required className="h-9 text-xs bg-input border-border text-foreground" />
+                            <div className="grid grid-cols-2 gap-2">
+                              <Input name="whatsapp" placeholder="WhatsApp" className="h-9 text-xs bg-input border-border text-foreground" />
+                              <Input name="data_nascimento" type="date" className="h-9 text-xs bg-input border-border text-foreground" title="Data de Nascimento" />
+                            </div>
+                            <Input name="endereco" placeholder="Endereço" className="h-9 text-xs bg-input border-border text-foreground" />
+                            <Button type="submit" size="sm" className="h-9 px-3 w-full font-bold shadow-sm hover:shadow-primary/25">Adicionar à Dupla</Button>
                           </form>
                         </div>
 
                         {/* LADO B: ESTUDANTES */}
                         <div className="p-4 flex flex-col bg-primary/5">
-                          <h4 className="text-sm font-bold uppercase text-primary mb-3 flex items-center gap-2">
+                          <h4 className="text-sm font-black uppercase text-primary tracking-widest mb-4 flex items-center gap-2">
                             <BookOpen className="w-4 h-4" /> Estudantes ({dupla.estudantes?.length})
                           </h4>
                           
-                          <ul className="space-y-2 mb-4 flex-1">
+                          <ul className="space-y-3 mb-4 flex-1">
                             {dupla.estudantes?.map((estudante: any, eIndex: number) => {
-                              // Variação de cor para Estudantes
-                              const bgEstudante = eIndex % 2 === 0 ? "bg-background/90" : "bg-[#161c24]";
+                              // Variação limpa
+                              const bgEstudante = eIndex % 2 === 0 ? "bg-background/30" : "bg-card/40";
 
                               return (
-                                <li key={estudante.id} className={`${bgEstudante} rounded-md border border-primary/20 flex flex-col group/est relative overflow-hidden shadow-sm`}>
+                                <li key={estudante.id} className={`${bgEstudante} rounded-lg border border-primary/20 flex flex-col group/est relative overflow-hidden shadow-sm`}>
                                   <details className="[&_summary::-webkit-details-marker]:hidden">
-                                    <summary className="p-2 flex justify-between items-start cursor-pointer list-none hover:bg-primary/10 transition-colors">
+                                    <summary className="p-3 flex justify-between items-start cursor-pointer list-none hover:bg-primary/10 transition-colors">
                                       <div className="flex-1 pr-2">
                                         <p className="font-bold text-sm text-foreground/90">{estudante.nome_pessoa}</p>
-                                        <p className="text-[10px] text-primary italic font-medium mt-1">
+                                        <p className="text-[10px] text-primary uppercase tracking-widest font-black mt-1">
                                           Livro: {estudante.estudo?.nome_estudo || "Sem material"}
                                         </p>
-                                        <div className="text-[10px] text-muted-foreground space-y-0.5 mt-0.5">
+                                        <div className="text-[10px] text-muted-foreground space-y-0.5 mt-1 font-medium">
                                           <p>Tel: {estudante.telefone || "N/A"} • Nasc: {estudante.data_nascimento ? new Date(estudante.data_nascimento).toLocaleDateString('pt-BR', {timeZone: 'UTC'}) : "N/A"}</p>
                                           {estudante.endereco && <p className="truncate" title={estudante.endereco}>End: {estudante.endereco}</p>}
                                         </div>
                                       </div>
                                       <div className="flex gap-2 opacity-0 group-hover/est:opacity-100 transition-opacity items-center">
-                                        <Pencil className="w-3.5 h-3.5 text-primary" />
+                                        <Pencil className="w-4 h-4 text-primary" />
                                         <form action={async () => { "use server"; await excluirEstudante(estudante.id); }}>
-                                          <button type="submit" className="text-destructive hover:scale-110 transition-transform"><Trash2 className="w-3.5 h-3.5" /></button>
+                                          <button type="submit" className="text-destructive hover:scale-110 transition-transform"><Trash2 className="w-4 h-4" /></button>
                                         </form>
                                       </div>
                                     </summary>
                                     
-                                    <div className="p-3 border-t border-primary/20 bg-background/80 cursor-default">
-                                      <form action={editarEstudante} className="space-y-2">
+                                    <div className="p-3 border-t border-primary/20 bg-card cursor-default">
+                                      <form action={editarEstudante} className="space-y-2.5">
                                         <input type="hidden" name="id" value={estudante.id} />
-                                        <Input name="nome_pessoa" defaultValue={estudante.nome_pessoa} required className="h-7 text-xs bg-background" placeholder="Nome da Família/Pessoa" />
-                                        <select name="estudo_biblico_id" defaultValue={estudante.estudo_biblico_id || ""} className="flex h-7 w-full rounded-md border border-input bg-background px-2 text-xs text-primary">
-                                          <option value="" disabled>Escolha o Livro...</option>
-                                          {estudos?.map(estudo => <option key={estudo.id} value={estudo.id}>{estudo.nome_estudo}</option>)}
+                                        <Input name="nome_pessoa" defaultValue={estudante.nome_pessoa} required className="h-8 text-xs bg-input border-border text-foreground" placeholder="Nome da Família/Pessoa" />
+                                        <select name="estudo_biblico_id" defaultValue={estudante.estudo_biblico_id || ""} className="flex h-8 w-full rounded-md border border-border bg-input px-2 text-xs text-foreground focus:ring-2 focus:ring-primary focus:outline-none">
+                                          {/* CORREÇÃO APLICADA AQUI TAMBÉM */}
+                                          <option value="" disabled className="bg-background text-muted-foreground">Escolha o Livro...</option>
+                                          {estudos?.map(estudo => <option key={estudo.id} value={estudo.id} className="bg-background text-foreground">{estudo.nome_estudo}</option>)}
                                         </select>
                                         <div className="grid grid-cols-2 gap-2">
-                                          <Input name="telefone" defaultValue={estudante.telefone} className="h-7 text-xs bg-background" placeholder="Telefone" />
-                                          <Input name="data_nascimento" type="date" defaultValue={estudante.data_nascimento} className="h-7 text-xs bg-background" />
+                                          <Input name="telefone" defaultValue={estudante.telefone} className="h-8 text-xs bg-input border-border text-foreground" placeholder="Telefone" />
+                                          <Input name="data_nascimento" type="date" defaultValue={estudante.data_nascimento} className="h-8 text-xs bg-input border-border text-foreground" />
                                         </div>
-                                        <Input name="endereco" defaultValue={estudante.endereco} className="h-7 text-xs bg-background" placeholder="Endereço" />
-                                        <Button type="submit" size="sm" className="h-7 text-xs w-full bg-primary font-bold">Salvar Alterações</Button>
+                                        <Input name="endereco" defaultValue={estudante.endereco} className="h-8 text-xs bg-input border-border text-foreground" placeholder="Endereço" />
+                                        <Button type="submit" size="sm" variant="secondary" className="h-8 text-xs w-full font-bold border border-border text-primary">Salvar Alterações</Button>
                                       </form>
                                     </div>
                                   </details>
@@ -345,22 +352,25 @@ export default async function DuplasPage() {
                           </ul>
 
                           {/* FORMULÁRIO PARA ADICIONAR ESTUDANTE */}
-                          <form action={adicionarEstudante} className="space-y-2 mt-auto p-3 bg-background/40 rounded-md border border-dashed border-primary/20 shadow-inner">
+                          <form action={adicionarEstudante} className="space-y-2.5 mt-auto p-4 bg-primary/10 rounded-lg border border-dashed border-primary/30 shadow-inner">
                             <input type="hidden" name="dupla_id" value={dupla.id} />
-                            <div className="text-[10px] uppercase font-bold text-primary flex items-center gap-1 mb-1"><Plus className="w-3 h-3"/> Novo Estudante/Família</div>
+                            <div className="text-[11px] uppercase font-black tracking-widest text-primary flex items-center gap-1 mb-2">
+                              <Plus className="w-3.5 h-3.5"/> Novo Estudante/Família
+                            </div>
 
-                            <Input name="nome_pessoa" placeholder="Nome do estudante/família" required className="h-8 text-xs bg-background" />
-                            <select name="estudo_biblico_id" required defaultValue="" className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-xs focus:ring-2 focus:ring-primary text-muted-foreground">
-                              <option value="" disabled>Selecione o Livro base...</option>
-                              {estudos?.map(estudo => <option key={estudo.id} value={estudo.id}>{estudo.nome_estudo}</option>)}
+                            <Input name="nome_pessoa" placeholder="Nome do estudante/família" required className="h-9 text-xs bg-input border-primary/20 focus-visible:ring-primary text-foreground" />
+                            <select name="estudo_biblico_id" required defaultValue="" className="flex h-9 w-full rounded-md border border-primary/20 bg-input px-2 text-xs focus:ring-2 focus:ring-primary text-foreground focus:outline-none">
+                              {/* CORREÇÃO APLICADA AQUI TAMBÉM */}
+                              <option value="" disabled className="bg-background text-muted-foreground">Selecione o Livro base...</option>
+                              {estudos?.map(estudo => <option key={estudo.id} value={estudo.id} className="bg-background text-foreground">{estudo.nome_estudo}</option>)}
                             </select>
                             <div className="grid grid-cols-2 gap-2">
-                              <Input name="telefone" placeholder="Telefone" className="h-8 text-xs bg-background" />
-                              <Input name="data_nascimento" type="date" className="h-8 text-xs bg-background" title="Data de Nascimento" />
+                              <Input name="telefone" placeholder="Telefone" className="h-9 text-xs bg-input border-primary/20 text-foreground" />
+                              <Input name="data_nascimento" type="date" className="h-9 text-xs bg-input border-primary/20 text-foreground" title="Data de Nascimento" />
                             </div>
-                            <Input name="endereco" placeholder="Endereço Completo" className="h-8 text-xs bg-background" />
+                            <Input name="endereco" placeholder="Endereço Completo" className="h-9 text-xs bg-input border-primary/20 text-foreground" />
                             
-                            <Button type="submit" size="sm" className="h-8 px-3 w-full bg-primary font-bold">Vincular Estudante</Button>
+                            <Button type="submit" size="sm" className="h-9 px-3 w-full font-bold shadow-md hover:shadow-primary/30">Vincular Estudante</Button>
                           </form>
                         </div>
 

@@ -73,45 +73,51 @@ export default async function LancamentosPage(props: { searchParams?: Promise<{ 
   const hoje = new Date().toISOString().split('T')[0];
 
   return (
-    <div className="p-6 w-full max-w-7xl mx-auto space-y-8">
+    <div className="p-6 w-full max-w-7xl mx-auto space-y-8 bg-background min-h-screen text-foreground">
       
+      {/* Cabeçalho */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <CalendarCheck className="w-8 h-8 text-primary" />
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Rotina Missionária</h1>
-            <p className="text-sm text-muted-foreground">Lançamentos da Semana</p>
+            <h1 className="text-3xl font-black tracking-tight text-foreground drop-shadow-sm">Rotina Missionária</h1>
+            <p className="text-sm font-medium tracking-widest uppercase text-muted-foreground mt-1">Lançamentos da Semana</p>
           </div>
         </div>
 
         <Link href="/dashboard">
-          <Button variant="outline" size="sm" className="gap-2 border-border/50 hover:bg-muted/50 transition-colors">
+          <Button variant="outline" size="sm" className="gap-2 border-border hover:bg-muted transition-colors bg-card">
             <ArrowLeft className="w-4 h-4" /> Voltar ao Painel
           </Button>
         </Link>
       </div>
 
+      {/* Filtro (Master) */}
       {isMaster && (
-        <Card className="bg-card/50 border-primary/20 backdrop-blur-md">
+        <Card className="bg-card/80 border-border backdrop-blur-md shadow-sm">
           <CardContent className="p-4">
             <form method="GET" className="flex flex-col sm:flex-row items-end gap-4">
-              <div className="flex-1 w-full space-y-1">
-                <Label htmlFor="pelotao" className="text-muted-foreground flex items-center gap-1">
+              <div className="flex-1 w-full space-y-1.5">
+                <Label htmlFor="pelotao" className="text-muted-foreground font-bold tracking-widest uppercase text-[10px] flex items-center gap-1">
                   <Filter className="w-3 h-3" /> Filtrar por Pelotão
                 </Label>
                 <select 
                   name="pelotao" 
                   id="pelotao"
                   defaultValue={selectedPelotaoId || ""}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
+                  className="flex h-10 w-full rounded-md border border-border bg-input px-3 py-2 text-sm text-foreground focus:ring-2 focus:ring-primary outline-none transition-colors"
                 >
-                  <option value="">Visão Global (Todos os Pelotões)</option>
+                  <option value="" className="bg-background text-muted-foreground">
+                    Visão Global (Todos os Pelotões)
+                  </option>
                   {pelotoes?.map(p => (
-                    <option key={p.id} value={p.id}>{p.nome}</option>
+                    <option key={p.id} value={p.id} className="bg-background text-foreground">
+                      {p.nome}
+                    </option>
                   ))}
                 </select>
               </div>
-              <Button type="submit" variant="default" className="w-full sm:w-auto font-bold shadow-md">
+              <Button type="submit" variant="default" className="w-full sm:w-auto font-bold shadow-md hover:shadow-primary/25 hover:-translate-y-0.5 transition-all">
                 Aplicar Filtro
               </Button>
             </form>
@@ -119,35 +125,38 @@ export default async function LancamentosPage(props: { searchParams?: Promise<{ 
         </Card>
       )}
 
+      {/* Acordeões de Duplas */}
       <div className="space-y-4">
         {duplas?.map((dupla) => {
           const pelotaoObj = Array.isArray(dupla.pelotao) ? dupla.pelotao[0] : dupla.pelotao;
           const nomeDoPelotao = pelotaoObj?.nome || "Sem pelotão";
           
-          // Todas as visitas da dupla, ordenadas da mais recente para a mais antiga
           const historicoVisitas = [...(dupla.visitas || [])].sort((a: any, b: any) => new Date(b.data_visita).getTime() - new Date(a.data_visita).getTime());
 
           return (
-            <details key={dupla.id} className="group border border-primary/20 bg-card/50 backdrop-blur-md rounded-xl overflow-hidden shadow-sm [&_summary::-webkit-details-marker]:hidden">
-              <summary className="bg-muted/20 px-6 py-4 border-b border-border/50 flex justify-between items-center cursor-pointer list-none hover:bg-muted/40 transition-all">
-                <h2 className="font-bold text-lg md:text-xl text-foreground flex items-center gap-3">
+            <details key={dupla.id} className="group border border-border bg-card/80 backdrop-blur-md rounded-xl overflow-hidden shadow-lg [&_summary::-webkit-details-marker]:hidden">
+              
+              <summary className="bg-muted/10 px-6 py-4 border-b border-border flex justify-between items-center cursor-pointer list-none hover:bg-muted/30 transition-colors">
+                <h2 className="font-bold text-lg md:text-xl text-foreground flex items-center gap-3 tracking-tight">
                   <Users className="w-5 h-5 md:w-6 md:h-6 text-primary" /> {dupla.nome_dupla}
                 </h2>
                 <div className="flex items-center gap-4">
-                  <span className="text-xs md:text-sm bg-background px-3 py-1 rounded-md text-muted-foreground border border-border/50 font-medium">
+                  <span className="text-xs md:text-sm bg-primary/10 px-3 py-1.5 rounded-md text-primary border border-primary/20 font-bold uppercase tracking-widest hidden sm:block">
                     {nomeDoPelotao}
                   </span>
-                  <ChevronDown className="w-5 h-5 text-muted-foreground group-open:rotate-180 transition-transform duration-300" />
+                  <ChevronDown className="w-6 h-6 text-primary group-open:rotate-180 transition-transform duration-300" />
                 </div>
               </summary>
 
-              <div className="flex flex-col divide-y divide-border/50">
-                <div className="p-6 space-y-5 bg-white">
-                  <h3 className="text-base font-black uppercase text-primary flex items-center gap-2 mb-2 border-b border-black/10 pb-2">
+              <div className="flex flex-col divide-y divide-border">
+                
+                {/* ACOMPANHAMENTO DE ESTUDOS */}
+                <div className="p-4 md:p-6 space-y-5 bg-card/40">
+                  <h3 className="text-base font-black uppercase tracking-widest text-primary flex items-center gap-2 mb-2 border-b border-border/50 pb-2">
                     <BookHeart className="w-5 h-5" /> Acompanhamento de Estudos
                   </h3>
                   
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid lg:grid-cols-2 gap-4">
                     {dupla.estudantes.filter((e: any) => e.status === 'ativo').map((estudante: any, index: number) => {
                       const licoesDoLivro = estudosComLicoes?.find(est => est.id === estudante.estudo_biblico_id)?.licoes || [];
                       licoesDoLivro.sort((a: any, b: any) => a.numero_licao - b.numero_licao);
@@ -159,57 +168,68 @@ export default async function LancamentosPage(props: { searchParams?: Promise<{ 
                         ? (Array.isArray(ultimoProgresso.licao) ? ultimoProgresso.licao[0] : ultimoProgresso.licao) 
                         : null;
 
-                      const isPar = index % 2 === 0;
-                      const bgContainer = isPar ? "bg-[#11161d]" : "bg-[#1a212c]";
+                      const bgContainer = index % 2 === 0 ? "bg-background/30" : "bg-muted/10";
 
                       return (
-                        <div key={estudante.id} className={`p-4 rounded-xl border border-primary/20 space-y-4 ${bgContainer} text-white shadow-lg`}>
-                          <div className="flex justify-between items-center border-b border-white/10 pb-2">
-                            <p className="font-black text-sm uppercase tracking-wider">{estudante.nome_pessoa}</p>
+                        <div key={estudante.id} className={`p-4 rounded-xl border border-border shadow-inner space-y-4 ${bgContainer}`}>
+                          <div className="flex justify-between items-center border-b border-border/50 pb-2">
+                            <p className="font-bold text-sm uppercase tracking-wider text-foreground/90">{estudante.nome_pessoa}</p>
                             {ultimoProgresso && licAnteriorObj && (
-                              <div className="text-[10px] text-primary font-bold bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+                              <div className="text-[10px] text-primary font-bold bg-primary/10 px-2 py-1 rounded border border-primary/20">
                                 L{licAnteriorObj.numero_licao} em {new Date(ultimoProgresso.data_registro).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
                               </div>
                             )}
                           </div>
                           
+                          {/* Form Lançar Estudo */}
                           <form action={lancarEstudo} className="flex flex-col sm:flex-row gap-2">
                             <input type="hidden" name="estudante_id" value={estudante.id} />
-                            <select name="licao_id" required defaultValue="" className="flex-1 h-9 rounded-md border border-white/10 bg-black/50 text-xs px-2 focus:ring-1 focus:ring-primary outline-none">
-                              <option value="" disabled>Lançar lição...</option>
+                            <select
+                              name="licao_id"
+                              required
+                              defaultValue=""
+                              className="flex-1 h-9 rounded-md border border-border bg-input text-xs px-2 text-foreground focus:ring-1 focus:ring-primary outline-none"
+                            >
+                              <option value="" disabled className="bg-background text-muted-foreground">
+                                Lançar lição...
+                              </option>
                               {licoesDoLivro.map((lic: any) => (
-                                <option key={lic.id} value={lic.id} className="text-black">Lição {lic.numero_licao}: {lic.titulo_licao}</option>
+                                <option key={lic.id} value={lic.id} className="bg-background text-foreground">
+                                  Lição {lic.numero_licao}: {lic.titulo_licao}
+                                </option>
                               ))}
                             </select>
-                            <Input name="data_registro" type="date" defaultValue={hoje} className="h-9 text-xs w-full sm:w-32 bg-black/50 border-white/10" />
-                            <Button type="submit" size="sm" className="h-9 px-4 font-bold"><Send className="w-3.5 h-3.5" /></Button>
+                            <Input name="data_registro" type="date" defaultValue={hoje} className="h-9 text-xs w-full sm:w-32 bg-input border-border text-foreground focus-visible:ring-primary" />
+                            <Button type="submit" size="sm" className="h-9 px-4 font-bold hover:shadow-primary/30 shadow-md"><Send className="w-3.5 h-3.5" /></Button>
                           </form>
 
+                          {/* Acordeão de Histórico */}
                           <details className="group/hist">
-                            <summary className="text-[10px] uppercase font-bold text-white/40 cursor-pointer hover:text-primary transition-colors flex items-center gap-1.5 list-none">
+                            <summary className="text-[10px] uppercase font-bold text-muted-foreground cursor-pointer hover:text-primary transition-colors flex items-center gap-1.5 list-none">
                               <History className="w-3 h-3" /> Ver histórico ({historicoEstudante.length})
                             </summary>
                             <div className="mt-3 space-y-2 max-h-40 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-primary/20">
                               {historicoEstudante.map((registro: any) => {
                                 return (
-                                  <form action={editarLancamentoEstudo} key={registro.id} className="flex items-center gap-2 p-2 bg-black/40 rounded-lg border border-white/5">
+                                  <form action={editarLancamentoEstudo} key={registro.id} className="flex items-center gap-2 p-2 bg-card rounded-lg border border-border shadow-sm">
                                     <input type="hidden" name="id" value={registro.id} />
                                     <select 
                                       name="licao_id" 
-                                      defaultValue={registro.licao_id} 
-                                      className="bg-transparent text-[10px] font-black text-white/70 focus:text-primary outline-none cursor-pointer"
+                                      defaultValue={registro.licao_id}
+                                      className="h-8 rounded-md border border-border bg-input px-2 text-[10px] font-black text-foreground focus:ring-1 focus:ring-primary outline-none cursor-pointer"
                                     >
                                       {licoesDoLivro.map((lic: any) => (
-                                        <option key={lic.id} value={lic.id} className="text-black">L{lic.numero_licao}</option>
+                                        <option key={lic.id} value={lic.id} className="bg-background text-foreground">
+                                          L{lic.numero_licao}
+                                        </option>
                                       ))}
                                     </select>
                                     <input 
                                       name="data_registro" 
                                       type="date" 
                                       defaultValue={registro.data_registro} 
-                                      className="bg-transparent text-[10px] text-white/40 outline-none w-24" 
+                                      className="bg-transparent text-[10px] text-muted-foreground outline-none w-24 focus:text-foreground" 
                                     />
-                                    {/* Botões sempre visíveis */}
                                     <div className="ml-auto flex gap-1">
                                       <button type="submit" title="Salvar" className="p-1.5 hover:bg-green-500/20 rounded text-green-500 transition-colors">
                                         <Save className="w-3 h-3" />
@@ -233,38 +253,39 @@ export default async function LancamentosPage(props: { searchParams?: Promise<{ 
                   </div>
                 </div>
 
-                <div className="p-6 bg-primary/5">
-                  <h3 className="text-base font-bold uppercase text-foreground flex items-center gap-2 mb-4 border-b border-border/20 pb-2">
-                    <Users className="w-5 h-5 text-primary" /> Registrar Visita
+                {/* REGISTRAR VISITAS */}
+                <div className="p-4 md:p-6 bg-card/60">
+                  <h3 className="text-base font-black uppercase tracking-widest text-primary flex items-center gap-2 mb-4 border-b border-border/50 pb-2">
+                    <Users className="w-5 h-5" /> Registrar Visita
                   </h3>
                   <div className="grid lg:grid-cols-2 gap-8">
                     
                     {/* Formulário Novo Lançamento de Visita */}
-                    <form action={lancarVisita} className="p-5 bg-background/60 border border-primary/20 rounded-xl space-y-5 shadow-sm h-fit">
+                    <form action={lancarVisita} className="p-5 bg-card border border-border rounded-xl space-y-5 shadow-sm h-fit">
                       <input type="hidden" name="dupla_id" value={dupla.id} />
-                      <div className="space-y-1">
-                        <Label className="text-xs uppercase font-bold text-muted-foreground">Nome do Visitado</Label>
-                        <Input name="nome_visitado" placeholder="Ex: Família Silva" required className="h-10 bg-background" />
+                      <div className="space-y-1.5">
+                        <Label className="text-[10px] tracking-wider uppercase font-bold text-muted-foreground">Nome do Visitado</Label>
+                        <Input name="nome_visitado" placeholder="Ex: Família Silva" required className="h-10 bg-input border-border text-foreground focus-visible:ring-primary" />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                          <Label className="text-xs uppercase font-bold text-muted-foreground">WhatsApp</Label>
-                          <Input name="whatsapp" placeholder="(00) 00000-0000" className="h-10 bg-background" />
+                        <div className="space-y-1.5">
+                          <Label className="text-[10px] tracking-wider uppercase font-bold text-muted-foreground">WhatsApp</Label>
+                          <Input name="whatsapp" placeholder="(00) 00000-0000" className="h-10 bg-input border-border text-foreground focus-visible:ring-primary" />
                         </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs uppercase font-bold text-muted-foreground">Data</Label>
-                          <Input name="data_visita" type="date" defaultValue={hoje} required className="h-10 bg-background" />
+                        <div className="space-y-1.5">
+                          <Label className="text-[10px] tracking-wider uppercase font-bold text-muted-foreground">Data</Label>
+                          <Input name="data_visita" type="date" defaultValue={hoje} required className="h-10 bg-input border-border text-foreground focus-visible:ring-primary" />
                         </div>
                       </div>
-                      <Button type="submit" variant="secondary" className="w-full font-bold border border-border/50 shadow-md">
-                        Gravar Visita <Send className="w-4 h-4 opacity-50 ml-2" />
+                      <Button type="submit" variant="secondary" className="w-full font-bold border border-border/50 shadow-sm hover:border-primary/50 hover:text-primary transition-all">
+                        Gravar Visita <Send className="w-4 h-4 ml-2" />
                       </Button>
                     </form>
 
                     {/* HISTÓRICO RECOLHÍVEL DE VISITAS */}
-                    <div className="bg-card/50 border border-border/40 p-4 rounded-xl h-fit">
+                    <div className="bg-background/40 border border-border p-4 rounded-xl shadow-inner h-fit">
                       <details className="group/histVisita">
-                        <summary className="text-xs uppercase font-bold text-foreground flex items-center justify-between cursor-pointer hover:text-primary transition-colors list-none pb-2 border-b border-border/50">
+                        <summary className="text-[11px] tracking-widest uppercase font-bold text-foreground flex items-center justify-between cursor-pointer hover:text-primary transition-colors list-none pb-2 border-b border-border/50">
                           <div className="flex items-center gap-1.5">
                             <History className="w-4 h-4" /> Histórico de Visitas ({historicoVisitas.length})
                           </div>
@@ -278,7 +299,7 @@ export default async function LancamentosPage(props: { searchParams?: Promise<{ 
                             </div>
                           ) : (
                             historicoVisitas.map((visita: any) => (
-                              <form action={editarVisita} key={visita.id} className="flex flex-wrap items-center gap-2 p-2 bg-background/80 rounded-lg border border-border/50 shadow-sm">
+                              <form action={editarVisita} key={visita.id} className="flex flex-wrap items-center gap-2 p-2 bg-card rounded-lg border border-border shadow-sm">
                                 <input type="hidden" name="id" value={visita.id} />
                                 
                                 <div className="flex-1 min-w-[120px]">
@@ -287,7 +308,7 @@ export default async function LancamentosPage(props: { searchParams?: Promise<{ 
                                     defaultValue={visita.nome_visitado} 
                                     required
                                     placeholder="Nome"
-                                    className="bg-transparent text-xs font-bold text-foreground w-full outline-none focus:border-b focus:border-primary px-1" 
+                                    className="bg-transparent text-xs font-bold text-foreground/90 w-full outline-none focus:border-b focus:border-primary px-1" 
                                   />
                                 </div>
                                 
@@ -296,7 +317,7 @@ export default async function LancamentosPage(props: { searchParams?: Promise<{ 
                                     name="whatsapp" 
                                     defaultValue={visita.whatsapp || ""} 
                                     placeholder="WhatsApp"
-                                    className="bg-transparent text-[10px] text-muted-foreground w-full outline-none focus:border-b focus:border-primary px-1" 
+                                    className="bg-transparent text-[10px] text-muted-foreground w-full outline-none focus:border-b focus:border-primary px-1 focus:text-foreground" 
                                   />
                                 </div>
 
@@ -306,11 +327,10 @@ export default async function LancamentosPage(props: { searchParams?: Promise<{ 
                                     type="date" 
                                     defaultValue={visita.data_visita} 
                                     required
-                                    className="bg-transparent text-[10px] text-muted-foreground w-full outline-none focus:text-primary" 
+                                    className="bg-transparent text-[10px] text-muted-foreground w-full outline-none focus:border-b focus:border-primary focus:text-foreground px-1" 
                                   />
                                 </div>
 
-                                {/* Botões sempre visíveis */}
                                 <div className="flex gap-1 ml-auto">
                                   <button type="submit" title="Salvar" className="p-1.5 hover:bg-green-500/20 rounded text-green-500 transition-colors">
                                     <Save className="w-3.5 h-3.5" />

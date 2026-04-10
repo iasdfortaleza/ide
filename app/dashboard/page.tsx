@@ -30,26 +30,28 @@ export default async function DashboardPage() {
   if (perfil?.role === "padrao") {
     return (
       <div className="relative flex min-h-screen items-center justify-center bg-background p-4 overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/10 blur-[100px] rounded-full pointer-events-none" />
+        {/* Glow Dourado */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/20 blur-[100px] rounded-full pointer-events-none" />
         
-        <Card className="z-10 w-full max-w-md border-primary/20 bg-card/90 backdrop-blur-md text-center shadow-2xl shadow-primary/5">
-          <CardHeader className="space-y-2">
-            <div className="mx-auto p-3 bg-primary/10 rounded-full w-fit mb-2">
+        {/* Card Escuro contrastando com o Dourado */}
+        <Card className="z-10 w-full max-w-md border-border bg-card/90 backdrop-blur-md text-center shadow-2xl shadow-black/20">
+          <CardHeader className="space-y-3">
+            <div className="mx-auto p-4 bg-primary/10 rounded-full w-fit mb-2 border border-primary/20">
               <Lock className="w-8 h-8 text-primary animate-pulse" />
             </div>
-            <CardTitle className="text-2xl font-bold">Acesso em Análise</CardTitle>
+            <CardTitle className="text-2xl font-bold text-foreground">Acesso em Análise</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <p className="text-muted-foreground">
-              Olá, <span className="text-foreground font-semibold">{perfil.nome}</span>! 
+              Olá, <span className="text-foreground font-bold">{perfil.nome}</span>! 
               Seu cadastro foi realizado com sucesso, mas seu perfil ainda está como 
               <span className="text-primary font-bold"> PADRÃO</span>.
             </p>
-            <div className="p-4 bg-background/50 rounded-lg border border-border text-sm italic">
+            <div className="p-4 bg-background/50 rounded-lg border border-border/50 text-sm italic text-muted-foreground/80">
               "Aguarde até que um administrador ou mestre libere seu acesso ao painel de gerenciamento."
             </div>
             <form action={signout}>
-              <Button variant="outline" className="w-full gap-2 hover:bg-destructive/10 hover:text-destructive transition-colors">
+              <Button variant="outline" className="w-full gap-2 border-destructive/50 text-destructive hover:bg-destructive hover:text-destructive-foreground transition-all">
                 <LogOut className="w-4 h-4" /> Sair do Sistema
               </Button>
             </form>
@@ -132,22 +134,24 @@ export default async function DashboardPage() {
   // Se for MASTER ou ADMIN (Acesso Liberado)
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header Simples */}
-      <header className="border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-20 shadow-sm">
+      {/* Header contrastante */}
+      <header className="border-b border-border bg-card/90 backdrop-blur-md sticky top-0 z-20 shadow-md">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <LayoutDashboard className="text-primary w-6 h-6" />
-            <span className="font-bold tracking-tight text-lg hidden sm:block">Painel de Controle</span>
+            <span className="font-bold tracking-widest uppercase text-foreground hidden sm:block">
+              Painel <span className="text-primary">Administrativo</span>
+            </span>
           </div>
           
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <p className="text-sm font-medium leading-none">{perfil?.nome}</p>
-              <p className="text-[10px] text-primary uppercase font-bold tracking-widest">{perfil?.role}</p>
+              <p className="text-sm font-bold text-foreground leading-none">{perfil?.nome}</p>
+              <p className="text-[10px] text-primary uppercase font-black tracking-widest mt-1">{perfil?.role}</p>
             </div>
             <form action={signout}>
-              <Button size="icon" variant="ghost" className="text-muted-foreground hover:text-destructive hover:bg-destructive/10">
-                <LogOut className="w-4 h-4" />
+              <Button size="icon" variant="ghost" className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
+                <LogOut className="w-5 h-5" />
               </Button>
             </form>
           </div>
@@ -155,47 +159,52 @@ export default async function DashboardPage() {
       </header>
 
       {/* Conteúdo do Dashboard */}
-      <main className="flex-1 max-w-7xl mx-auto p-6 w-full space-y-8">
+      <main className="flex-1 max-w-7xl mx-auto p-6 w-full space-y-8 mt-4">
         
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h2 className="text-3xl font-extrabold tracking-tight text-foreground">
-              Bem-vindo, {perfil?.nome.split(' ')[0]}
+            <h2 className="text-3xl font-black tracking-tight text-foreground drop-shadow-sm">
+              Bem-vindo, <span className="text-primary">{perfil?.nome.split(' ')[0]}</span>
             </h2>
-            <p className="text-muted-foreground">O que você deseja gerenciar hoje?</p>
+            <p className="text-muted-foreground font-medium mt-1 uppercase tracking-widest text-xs">
+              O que você deseja gerenciar hoje?
+            </p>
           </div>
           
-          <div className="flex items-center gap-2 bg-primary/5 border border-primary/20 px-4 py-2 rounded-full w-fit">
+          <div className="flex items-center gap-2 bg-primary/10 border border-primary/30 px-4 py-2.5 rounded-full w-fit shadow-sm">
             <ShieldCheck className="w-4 h-4 text-primary" />
-            <span className="text-xs font-semibold text-primary uppercase tracking-wider">Sistema Online</span>
+            <span className="text-xs font-bold text-primary uppercase tracking-widest">Sistema Online</span>
           </div>
         </div>
 
-        {/* GRID DE MÓDULOS (DINÂMICO) */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {/* GRID DE MÓDULOS (DINÂMICO) - Contraste Elevado */}
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {modulosPermitidos.map((modulo, index) => {
             const Icone = modulo.icon;
             return (
-              <Link key={index} href={modulo.href} className="group outline-none">
-                <Card className="h-full border-border/50 bg-card/30 hover:bg-muted/30 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1">
+              <Link key={index} href={modulo.href} className="group outline-none block h-full">
+                <Card className="h-full border-border bg-card hover:bg-muted/10 hover:border-primary/50 transition-all duration-300 hover:shadow-[0_10px_30px_rgba(var(--color-primary),0.1)] hover:-translate-y-1 overflow-hidden relative">
+                  {/* Linha dourada sutil no topo do card ao passar o mouse */}
+                  <div className="absolute top-0 left-0 w-full h-1 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500" />
+                  
                   <CardHeader className="flex flex-row items-start justify-between pb-2">
-                    <div className={`p-3 rounded-lg ${modulo.bgCor} group-hover:scale-110 transition-transform duration-300`}>
-                      <Icone className={`w-6 h-6 ${modulo.cor}`} />
+                    <div className={`p-3 rounded-xl border border-primary/10 ${modulo.bgCor} group-hover:bg-primary group-hover:border-primary transition-colors duration-300 shadow-inner`}>
+                      <Icone className={`w-6 h-6 ${modulo.cor} group-hover:text-primary-foreground transition-colors duration-300`} />
                     </div>
                     {/* Badge apenas visual para o Master saber o que é exclusivo dele */}
                     {perfil?.role === "master" && modulo.roles.length === 1 && (
-                      <span className="text-[9px] uppercase font-bold bg-primary/20 text-primary px-2 py-0.5 rounded border border-primary/20">
+                      <span className="text-[9px] uppercase font-black bg-primary/10 text-primary px-2.5 py-1 rounded border border-primary/20 tracking-widest">
                         Exclusivo
                       </span>
                     )}
                   </CardHeader>
-                  <CardContent className="space-y-1">
-                    <CardTitle className="text-lg group-hover:text-primary transition-colors">
+                  <CardContent className="space-y-1.5 pt-2">
+                    <CardTitle className="text-lg font-bold text-foreground group-hover:text-primary transition-colors tracking-tight">
                       {modulo.titulo}
                     </CardTitle>
-                    <CardDescription className="text-sm flex items-center justify-between">
+                    <CardDescription className="text-sm font-medium text-muted-foreground flex items-center justify-between">
                       {modulo.descricao}
-                      <ChevronRight className="w-4 h-4 opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-primary" />
+                      <ChevronRight className="w-5 h-5 opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-primary" />
                     </CardDescription>
                   </CardContent>
                 </Card>
