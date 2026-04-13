@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import FotoModal from "./FotoModal"; // <-- IMPORTANDO O NOVO COMPONENTE
 
 export default async function LancamentosPage(props: { searchParams?: Promise<{ pelotao?: string }> | { pelotao?: string } }) {
   const supabase = await createClient();
@@ -42,7 +43,7 @@ export default async function LancamentosPage(props: { searchParams?: Promise<{ 
   let duplasQuery = supabase
     .from("duplas")
     .select(`
-      id, nome_dupla,
+      id, nome_dupla, url_foto_dupla,
       pelotao:pelotoes(nome),
       estudantes(id, nome_pessoa, estudo_biblico_id, status),
       visitas!dupla_id(id, nome_visitado, data_visita, whatsapp)
@@ -137,9 +138,18 @@ export default async function LancamentosPage(props: { searchParams?: Promise<{ 
             <details key={dupla.id} className="group border border-border bg-card/80 backdrop-blur-md rounded-xl overflow-hidden shadow-lg [&_summary::-webkit-details-marker]:hidden">
               
               <summary className="bg-muted/10 px-6 py-4 border-b border-border flex justify-between items-center cursor-pointer list-none hover:bg-muted/30 transition-colors">
-                <h2 className="font-bold text-lg md:text-xl text-foreground flex items-center gap-3 tracking-tight">
-                  <Users className="w-5 h-5 md:w-6 md:h-6 text-primary" /> {dupla.nome_dupla}
-                </h2>
+                
+                {/* AQUI ESTÁ A CHAMADA DO MODAL SUBSTITUINDO A IMAGEM ESTÁTICA */}
+                <div className="flex items-center gap-4">
+                  <FotoModal 
+                    url_foto_dupla={dupla.url_foto_dupla} 
+                    nome_dupla={dupla.nome_dupla} 
+                  />
+                  <h2 className="font-bold text-lg md:text-xl text-foreground tracking-tight">
+                    {dupla.nome_dupla}
+                  </h2>
+                </div>
+
                 <div className="flex items-center gap-4">
                   <span className="text-xs md:text-sm bg-primary/10 px-3 py-1.5 rounded-md text-primary border border-primary/20 font-bold uppercase tracking-widest hidden sm:block">
                     {nomeDoPelotao}

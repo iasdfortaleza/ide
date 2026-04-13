@@ -15,18 +15,22 @@ export default async function MuralPelotaoPage(props: {
   const pelotao_id = params.pelotao_id;
 
   // ==========================================
-  // 1. LÓGICA DE DATAS (Padrão: Últimos 7 dias)
+  // 1. LÓGICA DE DATAS (Padrão: Últimos 7 dias a partir de ontem)
   // ==========================================
   const agora = new Date();
   const offset = agora.getTimezoneOffset() * 60000;
   const dataLocal = new Date(agora.getTime() - offset);
 
-  // Data Final: Hoje
-  const defaultEnd = dataLocal.toISOString().split('T')[0];
+  // Calcula a data de ontem
+  const dataOntem = new Date(dataLocal);
+  dataOntem.setDate(dataLocal.getDate() - 1);
 
-  // Data Inicial: 6 dias atrás
-  const dataSeteDiasAtras = new Date(dataLocal);
-  dataSeteDiasAtras.setDate(dataLocal.getDate() - 6);
+  // Data Final: Ontem
+  const defaultEnd = dataOntem.toISOString().split('T')[0];
+
+  // Data Inicial: 6 dias atrás a partir de ontem (total de 7 dias)
+  const dataSeteDiasAtras = new Date(dataOntem);
+  dataSeteDiasAtras.setDate(dataOntem.getDate() - 6);
   const defaultStart = dataSeteDiasAtras.toISOString().split('T')[0];
 
   const startDate = searchParams.start || defaultStart;

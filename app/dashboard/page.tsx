@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { 
   ShieldCheck, LogOut, LayoutDashboard, Lock, 
-  CalendarCheck, Users, Shield, BookOpen, UserCog, Globe, ChevronRight, Target 
+  CalendarCheck, Users, Shield, BookOpen, UserCog, Globe, ChevronRight, Target, MonitorPlay 
 } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -77,6 +77,15 @@ export default async function DashboardPage() {
       descricao: "Gerenciar componentes e estudantes.", 
       href: "/dashboard/duplas", 
       icon: Users, 
+      roles: ["admin", "master"],
+      cor: "text-primary",
+      bgCor: "bg-primary/10"
+    },
+    { 
+      titulo: "Centro de Treinamento", 
+      descricao: "Acessar capacitação e aulas em vídeo.", 
+      href: "/dashboard/aulas", 
+      icon: MonitorPlay, 
       roles: ["admin", "master"],
       cor: "text-primary",
       bgCor: "bg-primary/10"

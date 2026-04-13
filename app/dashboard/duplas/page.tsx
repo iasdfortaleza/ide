@@ -8,15 +8,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Users, Trash2, Plus, Image as ImageIcon, Shield, UserPlus, BookOpen, Pencil, ArrowLeft, ChevronDown } from "lucide-react";
+import { Users, Trash2, Plus, Image as ImageIcon, Shield, UserPlus, BookOpen, Pencil, ArrowLeft, ChevronDown, Filter } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-export default async function DuplasPage() {
+export default async function DuplasPage(props: { searchParams?: Promise<{ pelotao?: string }> | { pelotao?: string } }) {
   const supabase = await createClient();
 
-  // 1. Verificação de Segurança (Master ou Admin)
+  // 1. Capturar Parâmetros de Filtro da URL
+  const searchParams = await Promise.resolve(props.searchParams || {});
+  const selectedPelotaoId = searchParams.pelotao;
+
+  // 2. Verificação de Segurança (Master ou Admin)
   const { data: { user } } = await supabase.auth.getUser();
   const { data: userPerfil } = await supabase
     .from("perfis")
@@ -30,33 +34,36 @@ export default async function DuplasPage() {
 
   const isMaster = userPerfil.role === "master";
 
-  // 2. Buscar os Pelotões (Master vê todos, Admin vê apenas o dele)
-  let pelotoesQuery = supabase.from("pelotoes").select("id, nome");
+  // 3. Buscar os Pelotões (Master vê todos, Admin vê apenas o dele)
+  let pelotoesQuery = supabase.from("pelotoes").select("id, nome").order("nome");
   if (!isMaster) {
     pelotoesQuery = pelotoesQuery.eq("capitao_id", user?.id);
   }
   const { data: pelotoes } = await pelotoesQuery;
   const pelotoesIds = pelotoes?.map(p => p.id) || [];
 
-  // 3. Buscar os Materiais de Estudo (Para o select de estudantes)
+  // 4. Buscar os Materiais de Estudo (Para o select de estudantes)
   const { data: estudos } = await supabase.from("estudos_biblicos").select("id, nome_estudo");
 
-  // 4. Buscar as Duplas (filtradas pelos pelotões permitidos)
-  let duplas: any[] = [];
-  if (pelotoesIds.length > 0) {
-    const { data } = await supabase
-      .from("duplas")
-      .select(`
-        *,
-        pelotao:pelotoes(nome),
-        membros:membros_dupla(*),
-        estudantes(*, estudo:estudos_biblicos(nome_estudo))
-      `)
-      .in("pelotao_id", pelotoesIds)
-      .order("created_at", { ascending: false });
-    
-    duplas = data || [];
+  // 5. Buscar as Duplas (filtradas pelos pelotões permitidos E pelo filtro selecionado)
+  let duplasQuery = supabase
+    .from("duplas")
+    .select(`
+      *,
+      pelotao:pelotoes(nome),
+      membros:membros_dupla(*),
+      estudantes(*, estudo:estudos_biblicos(nome_estudo))
+    `)
+    .order("created_at", { ascending: false });
+
+  if (isMaster && selectedPelotaoId) {
+    duplasQuery = duplasQuery.eq("pelotao_id", selectedPelotaoId);
+  } else {
+    duplasQuery = duplasQuery.in("pelotao_id", pelotoesIds.length > 0 ? pelotoesIds : ['00000000-0000-0000-0000-000000000000']);
   }
+
+  const { data: duplasData } = await duplasQuery;
+  const duplas = duplasData || [];
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8 bg-background min-h-screen text-foreground">
@@ -79,6 +86,39 @@ export default async function DuplasPage() {
           </Button>
         </Link>
       </div>
+
+      {/* Filtro (Visível Apenas para Master) */}
+      {isMaster && (
+        <Card className="bg-card/80 border-border backdrop-blur-md shadow-sm">
+          <CardContent className="p-4">
+            <form method="GET" className="flex flex-col sm:flex-row items-end gap-4">
+              <div className="flex-1 w-full space-y-1.5">
+                <Label htmlFor="pelotao" className="text-muted-foreground font-bold tracking-widest uppercase text-[10px] flex items-center gap-1">
+                  <Filter className="w-3 h-3" /> Filtrar por Pelotão
+                </Label>
+                <select 
+                  name="pelotao" 
+                  id="pelotao"
+                  defaultValue={selectedPelotaoId || ""}
+                  className="flex h-10 w-full rounded-md border border-border bg-input px-3 py-2 text-sm text-foreground focus:ring-2 focus:ring-primary outline-none transition-colors"
+                >
+                  <option value="" className="bg-background text-muted-foreground">
+                    Visão Global (Todos os Pelotões)
+                  </option>
+                  {pelotoes?.map(p => (
+                    <option key={p.id} value={p.id} className="bg-background text-foreground">
+                      {p.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <Button type="submit" variant="default" className="w-full sm:w-auto font-bold shadow-md hover:shadow-primary/25 hover:-translate-y-0.5 transition-all">
+                Aplicar Filtro
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid lg:grid-cols-3 gap-8">
         
@@ -107,7 +147,6 @@ export default async function DuplasPage() {
                       id="pelotao_id" name="pelotao_id" required defaultValue="" 
                       className="flex h-10 w-full rounded-md border border-border bg-input px-3 py-2 text-sm text-foreground ring-offset-background focus:ring-2 focus:ring-primary focus:outline-none"
                     >
-                      {/* CORREÇÃO APLICADA: Forçando cor de fundo e texto no option */}
                       <option value="" disabled className="bg-background text-muted-foreground">Selecione...</option>
                       {pelotoes?.map(p => (
                         <option key={p.id} value={p.id} className="bg-background text-foreground">{p.nome}</option>
@@ -129,7 +168,7 @@ export default async function DuplasPage() {
           </Card>
         </div>
 
-        {/* COLUNA DIREITA: Lista de Duplas e Gestão de Membros/Estudantes (ACORDEÃO AQUI) */}
+        {/* COLUNA DIREITA: Lista de Duplas e Gestão de Membros/Estudantes */}
         <div className="lg:col-span-2 space-y-6">
           <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
             Duplas Ativas <span className="bg-primary text-primary-foreground px-2 py-0.5 rounded-full text-xs">{duplas.length}</span>
@@ -204,7 +243,6 @@ export default async function DuplasPage() {
                             <div className="space-y-1 flex-1 w-full">
                               <Label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Pelotão</Label>
                               <select name="pelotao_id" defaultValue={dupla.pelotao_id} required className="flex h-9 w-full rounded-md border border-border bg-input px-2 text-xs text-foreground focus:ring-2 focus:ring-primary focus:outline-none">
-                                {/* CORREÇÃO APLICADA AQUI TAMBÉM */}
                                 {pelotoes?.map(p => <option key={p.id} value={p.id} className="bg-background text-foreground">{p.nome}</option>)}
                               </select>
                             </div>
@@ -238,7 +276,6 @@ export default async function DuplasPage() {
                           
                           <ul className="space-y-3 mb-4 flex-1">
                             {dupla.membros?.map((membro: any, mIndex: number) => {
-                              // Variação de cor para membros limpa com variáveis
                               const bgMembro = mIndex % 2 === 0 ? "bg-background/20" : "bg-muted/10";
 
                               return (
@@ -303,7 +340,6 @@ export default async function DuplasPage() {
                           
                           <ul className="space-y-3 mb-4 flex-1">
                             {dupla.estudantes?.map((estudante: any, eIndex: number) => {
-                              // Variação limpa
                               const bgEstudante = eIndex % 2 === 0 ? "bg-background/30" : "bg-card/40";
 
                               return (
@@ -333,7 +369,6 @@ export default async function DuplasPage() {
                                         <input type="hidden" name="id" value={estudante.id} />
                                         <Input name="nome_pessoa" defaultValue={estudante.nome_pessoa} required className="h-8 text-xs bg-input border-border text-foreground" placeholder="Nome da Família/Pessoa" />
                                         <select name="estudo_biblico_id" defaultValue={estudante.estudo_biblico_id || ""} className="flex h-8 w-full rounded-md border border-border bg-input px-2 text-xs text-foreground focus:ring-2 focus:ring-primary focus:outline-none">
-                                          {/* CORREÇÃO APLICADA AQUI TAMBÉM */}
                                           <option value="" disabled className="bg-background text-muted-foreground">Escolha o Livro...</option>
                                           {estudos?.map(estudo => <option key={estudo.id} value={estudo.id} className="bg-background text-foreground">{estudo.nome_estudo}</option>)}
                                         </select>
@@ -360,7 +395,6 @@ export default async function DuplasPage() {
 
                             <Input name="nome_pessoa" placeholder="Nome do estudante/família" required className="h-9 text-xs bg-input border-primary/20 focus-visible:ring-primary text-foreground" />
                             <select name="estudo_biblico_id" required defaultValue="" className="flex h-9 w-full rounded-md border border-primary/20 bg-input px-2 text-xs focus:ring-2 focus:ring-primary text-foreground focus:outline-none">
-                              {/* CORREÇÃO APLICADA AQUI TAMBÉM */}
                               <option value="" disabled className="bg-background text-muted-foreground">Selecione o Livro base...</option>
                               {estudos?.map(estudo => <option key={estudo.id} value={estudo.id} className="bg-background text-foreground">{estudo.nome_estudo}</option>)}
                             </select>
