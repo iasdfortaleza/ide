@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { MuralHeader } from "@/components/mural/MuralHeader";
 import { TabelaEstudos } from "@/components/mural/TabelaEstudos";
+import { TabelaEstudosInativos } from "@/components/mural/TabelaEstudosInativos";
 import { TabelaVisitas } from "@/components/mural/TabelaVisitas";
 import { ResumoPeriodo } from "@/components/mural/ResumoPeriodo";
 import { AlvoBatismo } from "@/components/mural/AlvoBatismo";
@@ -104,6 +105,16 @@ export default async function MuralPelotaoPage(props: {
           duplas={duplas || []} 
           estudosComLicoes={estudosComLicoes || []} 
           progressoTotal={progressoTotal || []}
+          startDate={startDate}
+          endDate={endDate}
+        />
+
+        {/* NOVA TABELA DE ESTUDOS PARADOS */}
+        <TabelaEstudosInativos 
+          duplas={duplas || []} 
+          estudosComLicoes={estudosComLicoes || []} 
+          progressoTotal={progressoTotal || []}
+          visitasLancadas={visitasNoPeriodo}
           startDate={startDate}
           endDate={endDate}
         />

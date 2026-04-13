@@ -1,4 +1,4 @@
-import { Activity, ChevronDown, AlertCircle, BookOpenCheck, CheckCircle2, Users } from "lucide-react";
+import { Activity, ChevronDown, BookOpenCheck, CheckCircle2, Users } from "lucide-react";
 
 interface ResumoPeriodoProps {
   estudantesAtivos: any[];
@@ -25,34 +25,14 @@ export function ResumoPeriodo({
   const startFormatado = dtStart.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
   const endFormatado = dtEnd.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
 
-  // Referência para "Parados": 30 dias atrás a partir de HOJE (Independente do calendário)
-  const hoje = new Date();
-  const trintaDiasAtras = new Date(hoje);
-  trintaDiasAtras.setDate(hoje.getDate() - 30);
-  const data30DiasLimite = trintaDiasAtras.toISOString().split('T')[0];
-
   // 2. VARIÁVEIS DE CONTAGEM
-  let parados30DiasHoje = 0; // Alunos que não estudam há mais de 30 dias em relação a hoje
-  let paradosNoFiltro = 0;   // Alunos que não tiveram atividade no período do calendário
   let concluidosAcumulado = 0; // Alunos que já concluíram o estudo (Histórico Total)
   let concluidosNoFiltro = 0;  // Alunos que concluíram dentro do período do calendário
 
-  // 3. LÓGICA DE ESTUDOS PARADOS E CONCLUÍDOS (Por Aluno)
+  // 3. LÓGICA DE ESTUDOS CONCLUÍDOS (Por Aluno)
   for (const aluno of estudantesAtivos) {
     const progressoAluno = progressoTotal.filter(p => p.estudante_id === aluno.id);
     progressoAluno.sort((a, b) => new Date(b.data_registro).getTime() - new Date(a.data_registro).getTime());
-
-    // --- PARADOS (Situação Real Atual) ---
-    const ultimoEstudoGeral = progressoAluno[0];
-    if (!ultimoEstudoGeral || ultimoEstudoGeral.data_registro < data30DiasLimite) {
-      parados30DiasHoje++;
-    }
-
-    // --- PARADOS (Dentro do Período Selecionado) ---
-    const teveEstudoNoCalendario = progressoAluno.some(p => p.data_registro >= startDate && p.data_registro <= endDate);
-    if (!teveEstudoNoCalendario) {
-      paradosNoFiltro++;
-    }
 
     // --- CONCLUÍDOS ---
     const livro = estudosComLicoes.find(e => e.id === aluno.estudo_biblico_id);
@@ -105,27 +85,10 @@ export function ResumoPeriodo({
         <ChevronDown className="w-5 h-5 text-primary group-open:rotate-180 transition-transform duration-500" />
       </summary>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 md:p-6 bg-muted/5">
+      {/* Ajustado para 3 colunas em telas maiores */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 md:p-6 bg-muted/5">
         
-        {/* 1. PARADOS (Vermelho / Destructive) */}
-        <div className="flex flex-col bg-card border border-border/40 rounded-xl overflow-hidden shadow-sm hover:border-destructive/50 transition-colors">
-          <div className="bg-destructive/10 border-b border-destructive/20 p-2.5 flex items-center justify-center gap-2">
-            <AlertCircle className="w-4 h-4 text-destructive" />
-            <h3 className="font-bold text-[11px] uppercase tracking-widest text-destructive">Estudos Parados</h3>
-          </div>
-          <div className="flex divide-x divide-border/30 flex-1 p-3">
-            <div className="flex flex-col items-center justify-center flex-1 gap-1">
-              <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">Histórico</span>
-              <span className="text-3xl font-black text-destructive">{parados30DiasHoje}</span>
-            </div>
-            <div className="flex flex-col items-center justify-center flex-1 gap-1">
-              <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider text-center">Neste Período</span>
-              <span className="text-3xl font-black text-foreground">{paradosNoFiltro}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* 2. REALIZADOS (Azul) */}
+        {/* 1. REALIZADOS (Azul) */}
         <div className="flex flex-col bg-card border border-border/40 rounded-xl overflow-hidden shadow-sm hover:border-blue-400/50 transition-colors">
           <div className="bg-blue-400/10 border-b border-blue-400/20 p-2.5 flex items-center justify-center gap-2">
             <BookOpenCheck className="w-4 h-4 text-blue-400" />
@@ -143,7 +106,7 @@ export function ResumoPeriodo({
           </div>
         </div>
 
-        {/* 3. CONCLUÍDOS (Verde) */}
+        {/* 2. CONCLUÍDOS (Verde) */}
         <div className="flex flex-col bg-card border border-border/40 rounded-xl overflow-hidden shadow-sm hover:border-green-400/50 transition-colors">
           <div className="bg-green-400/10 border-b border-green-400/20 p-2.5 flex items-center justify-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-green-400" />
@@ -161,7 +124,7 @@ export function ResumoPeriodo({
           </div>
         </div>
 
-        {/* 4. VISITAS (Dourado/Primary) */}
+        {/* 3. VISITAS (Dourado/Primary) */}
         <div className="flex flex-col bg-card border border-border/40 rounded-xl overflow-hidden shadow-sm hover:border-primary/50 transition-colors">
           <div className="bg-primary/10 border-b border-primary/20 p-2.5 flex items-center justify-center gap-2">
             <Users className="w-4 h-4 text-primary" />
