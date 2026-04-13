@@ -14,21 +14,28 @@ export async function getRankingPelotoes(): Promise<PelotaoRanking[]> {
   const supabase = await createClient();
 
   // ==========================================
-  // 1. CÁLCULO DE DATAS (Ajustado para Fuso Local e englobando HOJE)
+  // 1. CÁLCULO DE DATAS (Fechando sempre no dia de ONTEM)
   // ==========================================
   const agora = new Date();
   
   const offset = agora.getTimezoneOffset() * 60000;
   const dataLocal = new Date(agora.getTime() - offset);
 
-  const endDate = dataLocal.toISOString().split('T')[0];
+  // Calcula a data de ontem
+  const dataOntem = new Date(dataLocal);
+  dataOntem.setDate(dataLocal.getDate() - 1);
 
-  const data7Dias = new Date(dataLocal);
-  data7Dias.setDate(dataLocal.getDate() - 6);
+  // Data Final: Ontem
+  const endDate = dataOntem.toISOString().split('T')[0];
+
+  // Data Inicial (7 dias): 6 dias atrás a partir de ontem
+  const data7Dias = new Date(dataOntem);
+  data7Dias.setDate(dataOntem.getDate() - 6);
   const startDate7 = data7Dias.toISOString().split('T')[0];
 
-  const data14Dias = new Date(dataLocal);
-  data14Dias.setDate(dataLocal.getDate() - 13);
+  // Data Inicial (14 dias): 13 dias atrás a partir de ontem
+  const data14Dias = new Date(dataOntem);
+  data14Dias.setDate(dataOntem.getDate() - 13);
   const startDate14 = data14Dias.toISOString().split('T')[0];
 
   // ==========================================
@@ -44,7 +51,7 @@ export async function getRankingPelotoes(): Promise<PelotaoRanking[]> {
     supabase.from("pelotoes").select("id, nome, igreja, url_imagem_estandarte"),
     supabase.from("duplas").select("id, pelotao_id"),
     supabase.from("estudantes").select("id, dupla_id"),
-    // Removemos o gte(startDate14) para puxar todo o histórico e calcular o Total
+    // Puxa todo o histórico até ontem para calcular o Total com precisão
     supabase.from("visitas").select("dupla_id, data_visita").lte("data_visita", endDate),
     supabase.from("progresso_estudo").select("estudante_id, data_registro").lte("data_registro", endDate)
   ]);
@@ -90,12 +97,12 @@ export async function getRankingPelotoes(): Promise<PelotaoRanking[]> {
     // Adiciona na pontuação TOTAL (Sempre)
     pInfo.pontosTotal += 1;
 
-    // Se estiver nos últimos 14 dias
+    // Se estiver nos últimos 14 dias a partir de ontem
     if (v.data_visita >= startDate14) {
       pInfo.pontos14Dias += 1;
     }
 
-    // Se estiver estritamente na semana atual (7 dias)
+    // Se estiver estritamente na semana atual (7 dias a partir de ontem)
     if (v.data_visita >= startDate7) {
       pInfo.pontos7Dias += 1;
     }
@@ -112,12 +119,12 @@ export async function getRankingPelotoes(): Promise<PelotaoRanking[]> {
     // Adiciona na pontuação TOTAL (Sempre)
     pInfo.pontosTotal += 2;
 
-    // Se estiver nos últimos 14 dias
+    // Se estiver nos últimos 14 dias a partir de ontem
     if (e.data_registro >= startDate14) {
       pInfo.pontos14Dias += 2;
     }
 
-    // Se estiver estritamente na semana atual (7 dias)
+    // Se estiver estritamente na semana atual (7 dias a partir de ontem)
     if (e.data_registro >= startDate7) {
       pInfo.pontos7Dias += 2;
     }
@@ -129,7 +136,7 @@ export async function getRankingPelotoes(): Promise<PelotaoRanking[]> {
   const rankingArray = Array.from(rankingMap.values());
 
   rankingArray.sort((a, b) => {
-    // Prioridade 1: Quem fez mais pontos nos últimos 7 dias
+    // Prioridade 1: Quem fez mais pontos nos últimos 7 dias (terminando ontem)
     if (b.pontos7Dias !== a.pontos7Dias) {
       return b.pontos7Dias - a.pontos7Dias;
     }
