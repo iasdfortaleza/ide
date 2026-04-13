@@ -104,7 +104,8 @@ export default async function AulasPage() {
               <p className="font-medium tracking-wide">Nenhuma aula cadastrada ainda.</p>
             </div>
           ) : (
-            <div className="grid md:grid-cols-1 xl:grid-cols-2 gap-6">
+            /* AQUI ESTÁ A MUDANÇA: Usando flex-col para forçar uma coluna inteira grande */
+            <div className="flex flex-col gap-8">
               {aulas.map((aula) => (
                 <Card key={aula.id} className="group border-border bg-card/60 backdrop-blur-md overflow-hidden shadow-md hover:shadow-primary/10 transition-all border hover:border-primary/30">
                   {/* Miniatura do YouTube */}
@@ -121,21 +122,21 @@ export default async function AulasPage() {
                   <CardContent className="p-5 space-y-3">
                     <div className="flex justify-between items-start gap-4">
                       <div>
-                        <h3 className="font-bold text-lg text-foreground leading-tight group-hover:text-primary transition-colors">{aula.titulo}</h3>
-                        <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{aula.descricao || "Sem descrição disponível."}</p>
+                        <h3 className="font-bold text-xl text-foreground leading-tight group-hover:text-primary transition-colors">{aula.titulo}</h3>
+                        <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{aula.descricao || "Sem descrição disponível."}</p>
                       </div>
                       
                       {isMaster && (
                         <form action={async () => { "use server"; await excluirAula(aula.id); }}>
                           <Button type="submit" variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0">
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-5 h-5" />
                           </Button>
                         </form>
                       )}
                     </div>
 
-                    <div className="pt-2 border-t border-border/50">
-                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
+                    <div className="pt-3 mt-2 border-t border-border/50">
+                      <span className="text-[11px] text-muted-foreground uppercase font-bold tracking-widest">
                         Postado em {new Date(aula.created_at).toLocaleDateString('pt-BR')}
                       </span>
                     </div>
