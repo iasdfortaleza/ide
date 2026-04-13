@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Video, Trash2, Plus, Play, ArrowLeft, ExternalLink, MonitorPlay } from "lucide-react";
+import { Video, Trash2, Plus, ArrowLeft, MonitorPlay } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -134,18 +134,10 @@ export default async function AulasPage() {
                       )}
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                    <div className="pt-2 border-t border-border/50">
                       <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
                         Postado em {new Date(aula.created_at).toLocaleDateString('pt-BR')}
                       </span>
-                      <a 
-                        href={`https://www.youtube.com/watch?v=${aula.youtube_id}`} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-xs font-bold text-primary flex items-center gap-1 hover:underline"
-                      >
-                        Ver no YouTube <ExternalLink className="w-3 h-3" />
-                      </a>
                     </div>
                   </CardContent>
                 </Card>
