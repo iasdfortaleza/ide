@@ -11,7 +11,7 @@ export async function criarPelotao(formData: FormData) {
 
   // 1. Verificação de segurança: Garantir que o usuário está logado
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error("Usuário não autenticado")
+  if (!user) return { success: false, message: "Usuário não autenticado." }
 
   // 2. Extraindo os dados que o usuário digitou no formulário
   const nome = formData.get('nome') as string
@@ -35,7 +35,7 @@ export async function criarPelotao(formData: FormData) {
 
     if (uploadError) {
       console.error("Erro no upload da imagem:", uploadError)
-      throw new Error("Falha ao enviar o estandarte.")
+      return { success: false, message: "Falha ao enviar o estandarte." }
     }
 
     const { data: publicUrlData } = supabase.storage
@@ -58,20 +58,21 @@ export async function criarPelotao(formData: FormData) {
 
   if (dbError) {
     console.error("Erro ao salvar no banco:", dbError)
-    throw new Error("Falha ao cadastrar o pelotão no banco de dados.")
+    return { success: false, message: "Falha ao cadastrar o pelotão no sistema." }
   }
 
   revalidatePath('/dashboard/pelotoes')
+  return { success: true, message: "Pelotão criado com sucesso!" }
 }
-
 
 // ==========================================
 // 2. EDITAR PELOTÃO
 // ==========================================
 export async function editarPelotao(formData: FormData) {
   const supabase = await createClient()
+  
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error("Usuário não autenticado")
+  if (!user) return { success: false, message: "Usuário não autenticado." }
 
   const id = formData.get('id') as string
   const nome = formData.get('nome') as string
@@ -131,18 +132,24 @@ export async function editarPelotao(formData: FormData) {
     })
     .eq('id', id)
 
-  if (error) throw new Error("Falha ao editar o pelotão.")
-  revalidatePath('/dashboard/pelotoes')
-}
+  if (error) {
+    console.error("Erro ao editar pelotão:", error)
+    return { success: false, message: "Falha ao atualizar os dados do pelotão." }
+  }
 
+  revalidatePath('/dashboard/pelotoes')
+  return { success: true, message: "Pelotão atualizado com sucesso!" }
+}
 
 // ==========================================
 // 3. EXCLUIR PELOTÃO
 // ==========================================
 export async function excluirPelotao(id: string) {
-  'use server'
   const supabase = await createClient()
   
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, message: "Usuário não autenticado." }
+
   // 1. Busca o pelotão para saber qual é a URL do estandarte dele
   const { data: pelotao } = await supabase.from('pelotoes').select('url_imagem_estandarte').eq('id', id).single()
 
@@ -159,8 +166,9 @@ export async function excluirPelotao(id: string) {
 
   if (error) {
     console.error("Erro ao excluir pelotão:", error)
-    throw new Error("Falha ao excluir o pelotão.")
+    return { success: false, message: "Falha ao excluir o pelotão. Ele pode ter dependências." }
   }
 
   revalidatePath('/dashboard/pelotoes')
+  return { success: true, message: "Pelotão excluído com sucesso!" }
 }

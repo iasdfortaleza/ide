@@ -5,7 +5,6 @@ import { revalidatePath } from 'next/cache'
 
 // Função auxiliar para extrair o ID do YouTube de vários formatos de link
 function extrairIdYoutube(url: string): string | null {
-  // Regex para capturar IDs de 11 caracteres de URLs padrão, youtu.be, embed, e shorts
   const regex = /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))((\w|-){11})/;
   const match = url.match(regex);
   return (match && match[1]) ? match[1] : null;
@@ -19,7 +18,7 @@ export async function adicionarAula(formData: FormData) {
 
   // 1. Verifica Autenticação
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error("Usuário não autenticado")
+  if (!user) return { success: false, message: "Usuário não autenticado." }
 
   // 2. Verifica se o usuário é MASTER (Segurança no Backend)
   const { data: perfil } = await supabase
@@ -29,7 +28,7 @@ export async function adicionarAula(formData: FormData) {
     .single()
 
   if (perfil?.role !== 'master') {
-    throw new Error("Acesso negado. Apenas o perfil Master pode cadastrar aulas.")
+    return { success: false, message: "Acesso negado. Apenas usuários Master podem cadastrar aulas." }
   }
 
   // 3. Coleta os dados do formulário
@@ -41,7 +40,7 @@ export async function adicionarAula(formData: FormData) {
   const youtube_id = extrairIdYoutube(url_youtube)
   
   if (!youtube_id) {
-    throw new Error("Link do YouTube inválido. Verifique o link e tente novamente.")
+    return { success: false, message: "Link do YouTube inválido. Verifique a URL e tente novamente." }
   }
 
   // 5. Salva no banco de dados
@@ -55,11 +54,12 @@ export async function adicionarAula(formData: FormData) {
 
   if (error) {
     console.error("Erro ao salvar aula:", error)
-    throw new Error("Falha ao cadastrar a aula.")
+    return { success: false, message: "Falha ao cadastrar a aula no sistema." }
   }
 
-  // 6. Atualiza a página para mostrar a nova aula
+  // 6. Atualiza a página
   revalidatePath('/dashboard/aulas')
+  return { success: true, message: "Aula cadastrada com sucesso!" }
 }
 
 // ==========================================
@@ -70,7 +70,7 @@ export async function excluirAula(id: string) {
   
   // 1. Verifica Autenticação
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error("Usuário não autenticado")
+  if (!user) return { success: false, message: "Usuário não autenticado." }
 
   // 2. Verifica Segurança
   const { data: perfil } = await supabase
@@ -80,7 +80,7 @@ export async function excluirAula(id: string) {
     .single()
 
   if (perfil?.role !== 'master') {
-    throw new Error("Acesso negado.")
+    return { success: false, message: "Acesso negado para exclusão." }
   }
 
   // 3. Deleta a aula
@@ -91,8 +91,9 @@ export async function excluirAula(id: string) {
 
   if (error) {
     console.error("Erro ao excluir aula:", error)
-    throw new Error("Falha ao excluir a aula.")
+    return { success: false, message: "Falha ao remover a aula." }
   }
 
   revalidatePath('/dashboard/aulas')
+  return { success: true, message: "Aula removida com sucesso!" }
 }
