@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+// ADICIONADO: Importação do nosso provedor de contexto de Toasts
+import { ToastProvider } from "../contexts/ToastContext"; 
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -35,7 +38,14 @@ export default function RootLayout({
     >
       {/* ADICIONADO: bg-background e text-foreground para puxar o fundo branco e texto escuro do globals.css */}
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        {children}
+        
+        {/* ADICIONADO: ToastProvider envolvendo o children.
+          Agora qualquer página dentro do sistema tem acesso ao hook useToast()
+        */}
+        <ToastProvider>
+          {children}
+        </ToastProvider>
+        
       </body>
     </html>
   );

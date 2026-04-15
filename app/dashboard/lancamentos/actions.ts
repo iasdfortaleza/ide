@@ -12,7 +12,7 @@ export async function lancarEstudo(formData: FormData) {
 
   // Verificação de segurança
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error("Usuário não autenticado")
+  if (!user) return { success: false, message: "Usuário não autenticado." }
 
   const estudante_id = formData.get('estudante_id') as string
   const licao_id = formData.get('licao_id') as string
@@ -31,23 +31,27 @@ export async function lancarEstudo(formData: FormData) {
 
   if (error) {
     console.error("Erro ao lançar estudo:", error)
-    throw new Error("Falha ao registrar o estudo.")
+    return { success: false, message: "Falha ao registrar o estudo." }
   }
 
-  // Revalida para atualizar os dados na tela de lançamentos e no mural público
+  // Revalida para atualizar os dados
   revalidatePath('/dashboard/lancamentos')
   revalidatePath('/', 'layout')
+  
+  return { success: true, message: "Estudo registrado com sucesso!" }
 }
 
 export async function editarLancamentoEstudo(formData: FormData) {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error("Usuário não autenticado")
+  if (!user) return { success: false, message: "Usuário não autenticado." }
 
   const id = formData.get('id') as string
   const licao_id = formData.get('licao_id') as string
   const data_registro = formData.get('data_registro') as string
+
+  if (!id) return { success: false, message: "ID do estudo não encontrado." }
 
   const { error } = await supabase
     .from('progresso_estudo')
@@ -59,18 +63,24 @@ export async function editarLancamentoEstudo(formData: FormData) {
 
   if (error) {
     console.error("Erro ao editar estudo:", error)
-    throw new Error("Falha ao atualizar o registro de estudo.")
+    return { success: false, message: "Falha ao atualizar o estudo." }
   }
 
   revalidatePath('/dashboard/lancamentos')
   revalidatePath('/', 'layout')
+  
+  return { success: true, message: "Estudo atualizado com sucesso!" }
 }
 
-export async function excluirLancamentoEstudo(id: string) {
+export async function excluirLancamentoEstudo(formData: FormData) {
   const supabase = await createClient()
   
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error("Usuário não autenticado")
+  if (!user) return { success: false, message: "Usuário não autenticado." }
+
+  const id = formData.get('id') as string
+  
+  if (!id) return { success: false, message: "ID do estudo não encontrado." }
 
   const { error } = await supabase
     .from('progresso_estudo')
@@ -79,11 +89,13 @@ export async function excluirLancamentoEstudo(id: string) {
 
   if (error) {
     console.error("Erro ao excluir estudo:", error)
-    throw new Error("Falha ao excluir o registro de estudo.")
+    return { success: false, message: "Falha ao excluir o estudo." }
   }
 
   revalidatePath('/dashboard/lancamentos')
   revalidatePath('/', 'layout')
+  
+  return { success: true, message: "Lançamento excluído com sucesso!" }
 }
 
 // ==========================================
@@ -94,7 +106,7 @@ export async function lancarVisita(formData: FormData) {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error("Usuário não autenticado")
+  if (!user) return { success: false, message: "Usuário não autenticado." }
 
   const dupla_id = formData.get('dupla_id') as string
   const nome_visitado = formData.get('nome_visitado') as string
@@ -116,23 +128,27 @@ export async function lancarVisita(formData: FormData) {
 
   if (error) {
     console.error("Erro ao lançar visita:", error)
-    throw new Error("Falha ao registrar a visita.")
+    return { success: false, message: "Falha ao registrar a visita." }
   }
 
   revalidatePath('/dashboard/lancamentos')
   revalidatePath('/', 'layout')
+  
+  return { success: true, message: "Visita registrada com sucesso!" }
 }
 
 export async function editarVisita(formData: FormData) {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error("Usuário não autenticado")
+  if (!user) return { success: false, message: "Usuário não autenticado." }
 
   const id = formData.get('id') as string
   const nome_visitado = formData.get('nome_visitado') as string
   const whatsapp = formData.get('whatsapp') as string
   const data_visita = formData.get('data_visita') as string
+
+  if (!id) return { success: false, message: "ID da visita não encontrado." }
 
   const { error } = await supabase
     .from('visitas')
@@ -145,18 +161,24 @@ export async function editarVisita(formData: FormData) {
 
   if (error) {
     console.error("Erro ao editar visita:", error)
-    throw new Error("Falha ao atualizar o registro de visita.")
+    return { success: false, message: "Falha ao atualizar a visita." }
   }
 
   revalidatePath('/dashboard/lancamentos')
   revalidatePath('/', 'layout')
+  
+  return { success: true, message: "Visita atualizada com sucesso!" }
 }
 
-export async function excluirVisita(id: string) {
+export async function excluirVisita(formData: FormData) {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error("Usuário não autenticado")
+  if (!user) return { success: false, message: "Usuário não autenticado." }
+
+  const id = formData.get('id') as string
+  
+  if (!id) return { success: false, message: "ID da visita não encontrado." }
 
   const { error } = await supabase
     .from('visitas')
@@ -165,9 +187,11 @@ export async function excluirVisita(id: string) {
 
   if (error) {
     console.error("Erro ao excluir visita:", error)
-    throw new Error("Falha ao excluir o registro de visita.")
+    return { success: false, message: "Falha ao excluir a visita." }
   }
 
   revalidatePath('/dashboard/lancamentos')
   revalidatePath('/', 'layout')
+  
+  return { success: true, message: "Visita excluída com sucesso!" }
 }

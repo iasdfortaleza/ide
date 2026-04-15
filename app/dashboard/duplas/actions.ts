@@ -11,13 +11,12 @@ export async function criarDupla(formData: FormData) {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error("Usuário não autenticado")
+  if (!user) return { success: false, message: "Usuário não autenticado." }
 
   const nome_dupla = formData.get('nome_dupla') as string
   const pelotao_id = formData.get('pelotao_id') as string
   const foto = formData.get('foto') as File
 
-  // CORREÇÃO TYPESCRIPT: Avisar que a variável pode ser nula ou string
   let url_foto_dupla: string | null = null
 
   // Lógica de Upload da Foto da Dupla
@@ -31,7 +30,7 @@ export async function criarDupla(formData: FormData) {
 
     if (uploadError) {
       console.error("Erro no upload da foto da dupla:", uploadError)
-      throw new Error("Falha ao enviar a foto da dupla.")
+      return { success: false, message: "Falha ao enviar a foto da dupla." }
     }
 
     const { data: publicUrlData } = supabase.storage
@@ -51,28 +50,28 @@ export async function criarDupla(formData: FormData) {
 
   if (dbError) {
     console.error("Erro ao salvar dupla no banco:", dbError)
-    throw new Error("Falha ao cadastrar a dupla.")
+    return { success: false, message: "Falha ao cadastrar a dupla." }
   }
 
   revalidatePath('/dashboard/duplas')
+  return { success: true, message: "Dupla criada com sucesso!" }
 }
 
 export async function editarDupla(formData: FormData) {
   const supabase = await createClient()
+  
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error("Usuário não autenticado")
+  if (!user) return { success: false, message: "Usuário não autenticado." }
 
   const id = formData.get('id') as string
   const nome_dupla = formData.get('nome_dupla') as string
   const pelotao_id = formData.get('pelotao_id') as string
   const foto = formData.get('foto') as File
   const foto_atual = formData.get('foto_atual') as string
-  const remover_foto = formData.get('remover_foto') === 'true' // Lógica do checkbox de remoção
+  const remover_foto = formData.get('remover_foto') === 'true'
 
-  // CORREÇÃO TYPESCRIPT: Avisar que a variável pode ser nula ou string
   let url_foto_dupla: string | null = foto_atual || null 
 
-  // 1. Se marcou a caixinha de remover a foto, apagamos do servidor e limpamos a URL
   if (remover_foto) {
     if (foto_atual) {
       const velhaFileName = foto_atual.split('/').pop()
@@ -82,7 +81,6 @@ export async function editarDupla(formData: FormData) {
     }
     url_foto_dupla = null
   } 
-  // 2. Se o usuário enviou uma nova foto, fazemos o upload e DELETAMOS a antiga
   else if (foto && foto.size > 0) {
     const fileExt = foto.name.split('.').pop()
     const fileName = `duplas/${Date.now()}-${Math.random().toString(36).substring(2, 10)}.${fileExt}`
@@ -97,7 +95,6 @@ export async function editarDupla(formData: FormData) {
         .getPublicUrl(fileName)
       url_foto_dupla = publicUrlData.publicUrl
 
-      // Exclui a foto antiga para não gastar espaço
       if (foto_atual) {
         const velhaFileName = foto_atual.split('/').pop()
         if (velhaFileName) {
@@ -112,21 +109,25 @@ export async function editarDupla(formData: FormData) {
     .update({ nome_dupla, pelotao_id, url_foto_dupla })
     .eq('id', id)
 
-  if (error) throw new Error("Falha ao editar a dupla.")
+  if (error) {
+    console.error("Erro ao editar dupla:", error)
+    return { success: false, message: "Falha ao editar a dupla." }
+  }
+  
   revalidatePath('/dashboard/duplas')
+  return { success: true, message: "Dupla atualizada com sucesso!" }
 }
 
 export async function excluirDupla(id: string) {
-  'use server'
   const supabase = await createClient()
   
-  // Primeiro, busca a dupla para saber qual é a URL da foto dela
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, message: "Usuário não autenticado." }
+  
   const { data: dupla } = await supabase.from('duplas').select('url_foto_dupla').eq('id', id).single()
 
-  // Deleta do banco de dados (o ON DELETE CASCADE já limpa os membros e estudantes)
   const { error } = await supabase.from('duplas').delete().eq('id', id)
   
-  // Se a dupla for deletada do banco com sucesso e tiver uma foto, deleta a foto do Storage
   if (!error && dupla?.url_foto_dupla) {
     const fileName = dupla.url_foto_dupla.split('/').pop()
     if (fileName) {
@@ -134,8 +135,13 @@ export async function excluirDupla(id: string) {
     }
   }
 
-  if (error) throw new Error("Falha ao excluir a dupla.")
+  if (error) {
+    console.error("Erro ao excluir dupla:", error)
+    return { success: false, message: "Falha ao excluir a dupla." }
+  }
+  
   revalidatePath('/dashboard/duplas')
+  return { success: true, message: "Dupla excluída com sucesso!" }
 }
 
 // ==========================================
@@ -144,6 +150,9 @@ export async function excluirDupla(id: string) {
 
 export async function adicionarMembro(formData: FormData) {
   const supabase = await createClient()
+  
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, message: "Usuário não autenticado." }
 
   const dupla_id = formData.get('dupla_id') as string
   const nome = formData.get('nome') as string
@@ -157,12 +166,20 @@ export async function adicionarMembro(formData: FormData) {
     .from('membros_dupla')
     .insert({ dupla_id, nome, whatsapp, endereco, data_nascimento })
 
-  if (error) throw new Error("Falha ao adicionar o membro à dupla.")
+  if (error) {
+    console.error("Erro ao adicionar membro:", error)
+    return { success: false, message: "Falha ao adicionar o membro à dupla." }
+  }
+  
   revalidatePath('/dashboard/duplas')
+  return { success: true, message: "Membro adicionado com sucesso!" }
 }
 
 export async function editarMembro(formData: FormData) {
   const supabase = await createClient()
+  
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, message: "Usuário não autenticado." }
   
   const id = formData.get('id') as string
   const nome = formData.get('nome') as string
@@ -177,16 +194,30 @@ export async function editarMembro(formData: FormData) {
     .update({ nome, whatsapp, endereco, data_nascimento })
     .eq('id', id)
 
-  if (error) throw new Error("Falha ao editar o membro da dupla.")
+  if (error) {
+    console.error("Erro ao editar membro:", error)
+    return { success: false, message: "Falha ao editar o membro da dupla." }
+  }
+  
   revalidatePath('/dashboard/duplas')
+  return { success: true, message: "Membro atualizado com sucesso!" }
 }
 
 export async function excluirMembro(id: string) {
-  'use server'
   const supabase = await createClient()
+  
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, message: "Usuário não autenticado." }
+
   const { error } = await supabase.from('membros_dupla').delete().eq('id', id)
-  if (error) throw new Error("Falha ao excluir o membro.")
+  
+  if (error) {
+    console.error("Erro ao excluir membro:", error)
+    return { success: false, message: "Falha ao excluir o membro." }
+  }
+  
   revalidatePath('/dashboard/duplas')
+  return { success: true, message: "Membro excluído com sucesso!" }
 }
 
 // ==========================================
@@ -195,6 +226,9 @@ export async function excluirMembro(id: string) {
 
 export async function adicionarEstudante(formData: FormData) {
   const supabase = await createClient()
+  
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, message: "Usuário não autenticado." }
 
   const dupla_id = formData.get('dupla_id') as string
   const nome_pessoa = formData.get('nome_pessoa') as string
@@ -217,12 +251,20 @@ export async function adicionarEstudante(formData: FormData) {
       status: 'ativo'
     })
 
-  if (error) throw new Error("Falha ao cadastrar a pessoa interessada.")
+  if (error) {
+    console.error("Erro ao adicionar estudante:", error)
+    return { success: false, message: "Falha ao cadastrar a pessoa interessada." }
+  }
+  
   revalidatePath('/dashboard/duplas')
+  return { success: true, message: "Estudante adicionado com sucesso!" }
 }
 
 export async function editarEstudante(formData: FormData) {
   const supabase = await createClient()
+  
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, message: "Usuário não autenticado." }
   
   const id = formData.get('id') as string
   const nome_pessoa = formData.get('nome_pessoa') as string
@@ -244,14 +286,28 @@ export async function editarEstudante(formData: FormData) {
     })
     .eq('id', id)
 
-  if (error) throw new Error("Falha ao editar o estudante.")
+  if (error) {
+    console.error("Erro ao editar estudante:", error)
+    return { success: false, message: "Falha ao editar o estudante." }
+  }
+  
   revalidatePath('/dashboard/duplas')
+  return { success: true, message: "Estudante atualizado com sucesso!" }
 }
 
 export async function excluirEstudante(id: string) {
-  'use server'
   const supabase = await createClient()
+  
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, message: "Usuário não autenticado." }
+
   const { error } = await supabase.from('estudantes').delete().eq('id', id)
-  if (error) throw new Error("Falha ao excluir o estudante.")
+  
+  if (error) {
+    console.error("Erro ao excluir estudante:", error)
+    return { success: false, message: "Falha ao excluir o estudante." }
+  }
+  
   revalidatePath('/dashboard/duplas')
+  return { success: true, message: "Estudante excluído com sucesso!" }
 }
