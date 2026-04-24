@@ -18,14 +18,7 @@ export function ResumoPeriodo({
   endDate
 }: ResumoPeriodoProps) {
   
-  // 1. CÁLCULO DO PERÍODO SELECIONADO NO CALENDÁRIO
-  const dtStart = new Date(startDate);
-  const dtEnd = new Date(endDate);
-  
-  const startFormatado = dtStart.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
-  const endFormatado = dtEnd.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
-
-  // 2. TOTAIS DE LANÇAMENTOS DO PERÍODO (Realizados e Visitas)
+  // 1. TOTAIS DE LANÇAMENTOS DO PERÍODO (Realizados e Visitas)
   const realizadosNoFiltro = progressoTotal.filter(
     p => p.data_registro >= startDate && p.data_registro <= endDate
   ).length;
@@ -43,9 +36,6 @@ export function ResumoPeriodo({
             <h2 className="text-lg md:text-xl font-black uppercase tracking-widest text-foreground drop-shadow-sm leading-none flex items-center gap-2">
               Painel de <span className="text-primary">Indicadores</span>
             </h2>
-            <span className="text-[10px] text-muted-foreground font-bold mt-1 uppercase tracking-widest">
-              Período: {startFormatado} a {endFormatado}
-            </span>
           </div>
         </div>
         <ChevronDown className="w-5 h-5 text-primary group-open:rotate-180 transition-transform duration-500" />
