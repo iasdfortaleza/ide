@@ -45,6 +45,8 @@ export function TabelaEstudos({
     })
     .filter((dupla) => dupla.estudantes.length > 0);
 
+  const totalDuplasAtivas = duplasFiltradas.length;
+
   // 2. FUNÇÃO DE STATUS DO ALUNO
   const getStatusAluno = (estudanteId: string, livroId: string) => {
     const progressoAluno = progressoTotal.filter((p) => p.estudante_id === estudanteId);
@@ -129,7 +131,12 @@ export function TabelaEstudos({
               Acompanhamento de <span className="text-primary">Estudos</span>
             </h2>
           </div>
-          <ChevronDown className="w-5 h-5 text-primary group-open:rotate-180 transition-transform duration-500" />
+          <div className="flex items-center gap-3">
+             <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded border border-primary/20">
+                {totalDuplasAtivas} {totalDuplasAtivas === 1 ? 'Dupla' : 'Duplas'}
+             </span>
+            <ChevronDown className="w-5 h-5 text-primary group-open:rotate-180 transition-transform duration-500" />
+          </div>
         </summary>
 
         <div className="overflow-x-auto">
