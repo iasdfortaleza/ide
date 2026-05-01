@@ -144,6 +144,38 @@ export default function LancamentosClient({
           const nomeDoPelotao = pelotaoObj?.nome || "Sem pelotão";
           
           const historicoVisitas = [...(dupla.visitas || [])].sort((a: any, b: any) => new Date(b.data_visita).getTime() - new Date(a.data_visita).getTime());
+          const estudantesComStatus: any[] = dupla.estudantes
+            .filter((e: any) => e.status === 'ativo')
+            .map((estudante: any) => {
+              const licoesDoLivro = [...(estudosComLicoes?.find(est => est.id === estudante.estudo_biblico_id)?.licoes || [])]
+                .sort((a: any, b: any) => a.numero_licao - b.numero_licao);
+              const historicoEstudante = progressoTotal?.filter(p => p.estudante_id === estudante.id) || [];
+              const ultimoProgresso = historicoEstudante[0];
+              const licAnteriorObj = ultimoProgresso?.licao
+                ? (Array.isArray(ultimoProgresso.licao) ? ultimoProgresso.licao[0] : ultimoProgresso.licao)
+                : null;
+              const ultimaLicao = licoesDoLivro[licoesDoLivro.length - 1];
+              const conclusao = ultimaLicao
+                ? historicoEstudante.find((registro: any) => {
+                    const licaoRegistro = Array.isArray(registro.licao) ? registro.licao[0] : registro.licao;
+                    return licaoRegistro?.numero_licao >= ultimaLicao.numero_licao;
+                  })
+                : null;
+
+              return {
+                estudante,
+                licoesDoLivro,
+                historicoEstudante,
+                ultimoProgresso,
+                licAnteriorObj,
+                conclusao,
+                finalizado: Boolean(conclusao),
+              };
+            });
+          const estudosEmAndamento = estudantesComStatus.filter((item: any) => !item.finalizado);
+          const estudosFinalizados = estudantesComStatus
+            .filter((item: any) => item.finalizado)
+            .sort((a: any, b: any) => new Date(b.conclusao.data_registro).getTime() - new Date(a.conclusao.data_registro).getTime());
 
           return (
             <details key={dupla.id} className="group border border-border bg-card/80 backdrop-blur-md rounded-xl overflow-hidden shadow-lg [&_summary::-webkit-details-marker]:hidden">
@@ -173,17 +205,7 @@ export default function LancamentosClient({
                   </h3>
                   
                   <div className="grid lg:grid-cols-2 gap-4">
-                    {dupla.estudantes.filter((e: any) => e.status === 'ativo').map((estudante: any, index: number) => {
-                      const licoesDoLivro = estudosComLicoes?.find(est => est.id === estudante.estudo_biblico_id)?.licoes || [];
-                      licoesDoLivro.sort((a: any, b: any) => a.numero_licao - b.numero_licao);
-
-                      const historicoEstudante = progressoTotal?.filter(p => p.estudante_id === estudante.id) || [];
-                      const ultimoProgresso = historicoEstudante[0];
-                      
-                      const licAnteriorObj = ultimoProgresso?.licao 
-                        ? (Array.isArray(ultimoProgresso.licao) ? ultimoProgresso.licao[0] : ultimoProgresso.licao) 
-                        : null;
-
+                    {estudosEmAndamento.map(({ estudante, licoesDoLivro, historicoEstudante, ultimoProgresso, licAnteriorObj }: any, index: number) => {
                       const bgContainer = index % 2 === 0 ? "bg-background/30" : "bg-muted/10";
 
                       return (
@@ -274,6 +296,89 @@ export default function LancamentosClient({
                       );
                     })}
                   </div>
+
+                  {estudosFinalizados.length > 0 && (
+                    <details className="group/finalizados rounded-xl border border-border bg-background/30 shadow-inner [&_summary::-webkit-details-marker]:hidden">
+                      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-4 py-3 text-xs font-black uppercase tracking-widest text-primary transition-colors hover:bg-muted/20">
+                        <span className="min-w-0 truncate">Estudos finalizados ({estudosFinalizados.length})</span>
+                        <ChevronDown className="h-5 w-5 shrink-0 group-open/finalizados:rotate-180 transition-transform duration-300" />
+                      </summary>
+
+                      <div className="grid gap-4 border-t border-border/50 p-4 lg:grid-cols-2">
+                        {estudosFinalizados.map(({ estudante, licoesDoLivro, historicoEstudante, licAnteriorObj, conclusao }: any, index: number) => {
+                          const bgContainer = index % 2 === 0 ? "bg-background/30" : "bg-muted/10";
+
+                          return (
+                            <div key={estudante.id} className={`min-w-0 overflow-hidden p-4 rounded-xl border border-border shadow-inner space-y-4 ${bgContainer}`}>
+                              <div className="flex justify-between items-center gap-3 border-b border-border/50 pb-2">
+                                <p className="min-w-0 truncate font-bold text-sm uppercase tracking-wider text-foreground/90">{estudante.nome_pessoa}</p>
+                                <div className="shrink-0 whitespace-nowrap text-[10px] text-green-500 font-bold bg-green-500/10 px-2 py-1 rounded border border-green-500/20">
+                                  Finalizado em {new Date(conclusao.data_registro).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
+                                </div>
+                              </div>
+
+                              {licAnteriorObj && (
+                                <div className="rounded-lg border border-primary/20 bg-primary/10 px-3 py-2 text-[11px] font-bold uppercase tracking-widest text-primary">
+                                  Último lançamento: L{licAnteriorObj.numero_licao}
+                                </div>
+                              )}
+
+                              <details className="group/hist" suppressHydrationWarning>
+                                <summary className="text-[10px] uppercase font-bold text-muted-foreground cursor-pointer hover:text-primary transition-colors flex items-center gap-1.5 list-none">
+                                  <History className="w-3 h-3" /> Ver histórico ({historicoEstudante.length})
+                                </summary>
+                                <div className="mt-3 space-y-2 max-h-40 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-primary/20">
+                                  {historicoEstudante.map((registro: any) => {
+                                    return (
+                                      <form action={(fd) => executarAcao(fd, editarLancamentoEstudo)} key={`${registro.id}-${registro.licao_id}-${registro.data_registro}`} className="flex items-center gap-2 p-2 bg-card rounded-lg border border-border shadow-sm">
+                                        <input type="hidden" name="id" value={registro.id} />
+                                        <select
+                                          name="licao_id"
+                                          defaultValue={registro.licao_id}
+                                          className="h-8 rounded-md border border-border bg-input px-2 text-[10px] font-black text-foreground focus:ring-1 focus:ring-primary outline-none cursor-pointer"
+                                        >
+                                          {licoesDoLivro.map((lic: any) => (
+                                            <option key={lic.id} value={lic.id} className="bg-background text-foreground">
+                                              L{lic.numero_licao}
+                                            </option>
+                                          ))}
+                                        </select>
+                                        <input
+                                          name="data_registro"
+                                          type="date"
+                                          defaultValue={registro.data_registro}
+                                          className="bg-transparent text-[10px] text-muted-foreground outline-none w-24 focus:text-foreground"
+                                        />
+                                        <div className="ml-auto flex gap-1">
+                                          <button type="submit" title="Salvar" className="p-1.5 hover:bg-green-500/20 rounded text-green-500 transition-colors">
+                                            <Save className="w-3 h-3" />
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              const form = e.currentTarget.closest('form');
+                                              if (form) {
+                                                const fd = new FormData(form);
+                                                confirmarExclusao(fd, excluirLancamentoEstudo, "este lançamento de estudo");
+                                              }
+                                            }}
+                                            className="p-1.5 hover:bg-destructive/20 rounded text-destructive transition-colors"
+                                            title="Excluir"
+                                          >
+                                            <Trash2 className="w-3 h-3" />
+                                          </button>
+                                        </div>
+                                      </form>
+                                    );
+                                  })}
+                                </div>
+                              </details>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </details>
+                  )}
                 </div>
 
                 {/* REGISTRAR VISITAS */}
