@@ -187,24 +187,24 @@ export default function LancamentosClient({
                       const bgContainer = index % 2 === 0 ? "bg-background/30" : "bg-muted/10";
 
                       return (
-                        <div key={estudante.id} className={`p-4 rounded-xl border border-border shadow-inner space-y-4 ${bgContainer}`}>
-                          <div className="flex justify-between items-center border-b border-border/50 pb-2">
-                            <p className="font-bold text-sm uppercase tracking-wider text-foreground/90">{estudante.nome_pessoa}</p>
+                        <div key={estudante.id} className={`min-w-0 overflow-hidden p-4 rounded-xl border border-border shadow-inner space-y-4 ${bgContainer}`}>
+                          <div className="flex justify-between items-center gap-3 border-b border-border/50 pb-2">
+                            <p className="min-w-0 truncate font-bold text-sm uppercase tracking-wider text-foreground/90">{estudante.nome_pessoa}</p>
                             {ultimoProgresso && licAnteriorObj && (
-                              <div className="text-[10px] text-primary font-bold bg-primary/10 px-2 py-1 rounded border border-primary/20">
+                              <div className="shrink-0 whitespace-nowrap text-[10px] text-primary font-bold bg-primary/10 px-2 py-1 rounded border border-primary/20">
                                 L{licAnteriorObj.numero_licao} em {new Date(ultimoProgresso.data_registro).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
                               </div>
                             )}
                           </div>
                           
                           {/* Form Lançar Estudo */}
-                          <form action={(fd) => executarAcao(fd, lancarEstudo)} className="flex flex-col sm:flex-row gap-2">
+                          <form action={(fd) => executarAcao(fd, lancarEstudo)} className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_8rem_auto]">
                             <input type="hidden" name="estudante_id" value={estudante.id} />
                             <select
                               name="licao_id"
                               required
                               defaultValue=""
-                              className="flex-1 h-9 rounded-md border border-border bg-input text-xs px-2 text-foreground focus:ring-1 focus:ring-primary outline-none"
+                              className="h-9 w-full min-w-0 truncate rounded-md border border-border bg-input text-xs px-2 text-foreground focus:ring-1 focus:ring-primary outline-none"
                             >
                               <option value="" disabled className="bg-background text-muted-foreground">
                                 Lançar lição...
@@ -215,8 +215,8 @@ export default function LancamentosClient({
                                 </option>
                               ))}
                             </select>
-                            <Input name="data_registro" type="date" defaultValue={hoje} className="h-9 text-xs w-full sm:w-32 bg-input border-border text-foreground focus-visible:ring-primary" />
-                            <Button type="submit" size="sm" className="h-9 px-4 font-bold hover:shadow-primary/30 shadow-md"><Send className="w-3.5 h-3.5" /></Button>
+                            <Input name="data_registro" type="date" defaultValue={hoje} className="h-9 w-full min-w-0 text-xs bg-input border-border text-foreground focus-visible:ring-primary" />
+                            <Button type="submit" size="sm" className="h-9 w-full px-4 font-bold hover:shadow-primary/30 shadow-md sm:w-10 sm:px-0"><Send className="w-3.5 h-3.5" /></Button>
                           </form>
 
                           {/* Acordeão de Histórico */}
